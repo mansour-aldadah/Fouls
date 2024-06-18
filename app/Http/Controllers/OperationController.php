@@ -6,8 +6,11 @@ use App\Models\Operation;
 use App\Models\Consumer;
 use App\Models\SubConsumer;
 use Carbon\Carbon;
+use Hamcrest\Type\IsInteger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Validation\Rule;
+use Ramsey\Uuid\Type\Integer;
 use Symfony\Component\HttpFoundation\Response;
 
 class OperationController extends Controller
@@ -79,6 +82,8 @@ class OperationController extends Controller
         $description = $request->input('description');
         $consumer_id = $request->input('consumer_name');
         $reportDate = $request->input('reportDate');
+
+
         if ($request->input('checked')) {
             $checked = true;
         } else {
@@ -98,14 +103,44 @@ class OperationController extends Controller
         // if ($amount) {
         //     $operations->where('amount', $amount);
         // }
-
-        if ($From) {
-            if ($To == null) {
-                $operations->where('date',  $From);
-            } else {
+        if ($reportDate == 'يومي') {
+            $request->validate([
+                'from_date' => 'required'
+            ], [
+                'from_date.required' => 'أدخل التاريخ'
+            ]);
+            $operations->where('date',  $From);
+        } elseif ($reportDate == 'لفترة') {
+            $request->validate(
+                [
+                    'from_date' => 'required',
+                    'to_date' => [Rule::requiredIf(fn () => $From !== null), 'after:from_date']
+                ],
+                [
+                    'from_date.required' => 'أدخل التاريخ',
+                    'to_date.required' => 'أدخل التاريخ الثاني',
+                    'to_date.after' => 'يجب أن يكون التاريخ الثاني بعد التاريخ الأول'
+                ]
+            );
+            $operations->where('date', '>=', $From);
+        } else {
+            if ($From || $To) {
+                $request->validate(
+                    [
+                        'from_date' => 'required',
+                        'to_date' => [Rule::requiredIf(fn () => $From !== null), 'after:from_date']
+                    ],
+                    [
+                        'from_date.required' => 'أدخل التاريخ',
+                        'to_date.required' => 'أدخل التاريخ الثاني',
+                        'to_date.after' => 'يجب أن يكون التاريخ الثاني بعد التاريخ الأول'
+                    ]
+                );
                 $operations->where('date', '>=', $From);
             }
         }
+
+
 
         if ($To) {
             $operations->where('date', '<=', $To);
@@ -149,7 +184,6 @@ class OperationController extends Controller
             'consumer_id' => $consumer_id,
             'description' => $description,
             'sub_consumer_id' => $sub_consumer_id,
-
         ]);
         return view('operations.search-result', ['operations' => $operations]);
     }
@@ -197,24 +231,30 @@ class OperationController extends Controller
      */
     public function store(Request $request)
     {
+
         $request->validate([
             'sub_consumer_name' => 'required',
-            'amount' => 'required',
+            'amount' => ['required', 'numeric'],
             'date' => 'required',
             'foulType' => 'required',
             'receiverName' => 'required',
-            'dischangeNumber' => 'required|unique:operations|max:4|min:4',
+            'dischangeNumber' => ['required', 'unique:operations', 'regex:/^\d{4}$/']
         ], [
             'sub_consumer_name' => 'أدخل اسم المستهلك',
             'amount' => 'أدخل كمية الوقود',
+            'amount.numeric' => 'يجب أن تكون كمية الوقود رقماً',
             'date' => 'أدخل التاريخ',
             'foulType' => 'أدخل نوع الوقود',
             'receiverName' => 'أدخل اسم المستلم',
             'dischangeNumber.required' => 'أدخل رقم سند الصرف',
             'dischangeNumber.unique' => 'هذا السند موجود مسبقاً',
-            'dischangeNumber.max' => 'يجب ألا يزيد رقم سند الصرف عن 4 أرقام',
-            'dischangeNumber.min' => 'يجب ألا يقل رقم سند الصرف عن 4 أرقام',
+            'dischangeNumber.regex' => 'يجب أن يتكون سند الصرف من 4 أرقام',
         ]);
+        if (+$request->amount > Operation::getExistOF($request->foulType)) {
+            $request->validate(['amount' => function ($attribute, $value, $fail) {
+                return $fail('لا يوجد ما يكفي من الوقود لصرف هذه الكمية');
+            }]);
+        }
         $operation = new Operation();
         $operation->sub_consumer_id = $request->input('sub_consumer_name');
         if ($request->input('checked')) {
@@ -228,6 +268,9 @@ class OperationController extends Controller
         $operation->dischangeNumber = $request->input('dischangeNumber');
         $operation->receiverName = $request->input('receiverName');
         $operation->foulType = $request->input('foulType');
+        ///////////////////////////
+
+        //////////////////////////
         $operation->description = $request->input('description');
         $isSaved = $operation->save();
         session()->flash('messege', $isSaved ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة');
@@ -237,11 +280,12 @@ class OperationController extends Controller
     public function store_income(Request $request)
     {
         $request->validate([
-            'amount' => 'required',
+            'amount' => ['required', 'numeric'],
             'date' => 'required',
             'foulType' => 'required',
         ], [
-            'amount' => 'أدخل كمية الوقود',
+            'amount.required' => 'أدخل كمية الوقود',
+            'amount.number' => 'يجب أن تكون كمية الوقود رقماً',
             'date' => 'أدخل التاريخ',
             'foulType' => 'أدخل نوع الوقود',
         ]);
@@ -311,20 +355,21 @@ class OperationController extends Controller
         // dd($request->page);
         $request->validate([
             'sub_consumer_name' => 'required',
-            'amount' => 'required',
+            'amount' => ['required', 'number'],
             'date' => 'required',
             'foulType' => 'required',
             'receiverName' => 'required',
-            'dischangeNumber' => 'required|max:4|min:4',
+            'dischangeNumber' => ['required', 'unique:operations', 'regex:/^\d{4}$/']
         ], [
             'sub_consumer_name' => 'أدخل اسم المستهلك',
-            'amount' => 'أدخل كمية الوقود',
+            'amount.required' => 'أدخل كمية الوقود',
+            'amount.number' => 'يجب أن تكون كمية الوقود رقماً',
             'date' => 'أدخل التاريخ',
             'foulType' => 'أدخل نوع الوقود',
             'receiverName' => 'أدخل اسم المستلم',
             'dischangeNumber.required' => 'أدخل رقم سند الصرف',
-            'dischangeNumber.max' => 'يجب ألا يزيد رقم سند الصرف عن 4 أرقام',
-            'dischangeNumber.min' => 'يجب ألا يقل رقم سند الصرف عن 4 أرقام',
+            'dischangeNumber.regex' => 'يجب أن يتكون سند الصرف من 4 أرقام',
+
         ]);
         // dd($page);
         $page = $request->page;
@@ -360,11 +405,12 @@ class OperationController extends Controller
     public function updateIncome(Request $request, Operation $operation)
     {
         $request->validate([
-            'amount' => 'required',
+            'amount' => ['required', 'numeric'],
             'date' => 'required',
             'foulType' => 'required',
         ], [
-            'amount' => 'أدخل كمية الوقود',
+            'amount.required' => 'أدخل كمية الوقود',
+            'amount.number' => 'يجب أن تكون كمية الوقود رقماً',
             'date' => 'أدخل التاريخ',
             'foulType' => 'أدخل نوع الوقود',
         ]);

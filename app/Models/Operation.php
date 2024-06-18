@@ -92,4 +92,12 @@ class Operation extends Model
     {
         return static::getIncomes() - static::getOutcomes();
     }
+
+    public static function getExistOF($foulType)
+    {
+        $operationsIn = Operation::all()->where('foulType', $foulType)->where('type', 'وارد')->sum('amount');
+        $operationsOut = Operation::all()->where('foulType', $foulType)->where('type', 'صرف')->sum('amount');
+        $amounts = $operationsIn - $operationsOut;
+        return $amounts;
+    }
 }

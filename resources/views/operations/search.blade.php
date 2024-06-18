@@ -7,7 +7,15 @@
 @section('content')
 
     <div class="container">
-
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible">
+                <button class="close" data-dismiss="alert" aria-hidden="true">x</button>
+                <h5><i class="icon fas fa-ban"></i> تحذير !</h5>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </div>
+        @endif
         <div class="card card-primary">
             <div class="card-header">
                 <h3 class="card-title p-2"></h3>
@@ -187,13 +195,27 @@
                 }
             })
 
+            // if ($('#reportDate').val()) {
+            //     if ($('#reportDate').val() == 'يومي') {
+            //         $('.reportDate').css('display', 'none');
+            //         $('.onlyDate').css('display', 'block');
+            //         $('#from_date').val('required', 'required');
+            //     } else {
+            //         $('.reportDate').css('display', 'block');
+            //         $('.onlyDate').css('display', 'none');
+            //         $('#from_date').val("")
+            //     }
+            // } else {
+            //     $('.reportDate').css('display', 'block');
+            //     $('.onlyDate').css('display', 'none');
+            //     $('#from_date').val("")
+            // }
             $('#reportDate').on('change', function() {
                 var date = $(this).val();
                 if (date) {
                     if (date == 'يومي') {
                         $('.reportDate').css('display', 'none');
                         $('.onlyDate').css('display', 'block');
-                        $('#from_date').attr('required', 'required');
                     } else {
                         $('.reportDate').css('display', 'block');
                         $('.onlyDate').css('display', 'none');
