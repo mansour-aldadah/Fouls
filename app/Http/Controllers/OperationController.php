@@ -184,6 +184,7 @@ class OperationController extends Controller
             'consumer_id' => $consumer_id,
             'description' => $description,
             'sub_consumer_id' => $sub_consumer_id,
+            'checked' => $checked,
         ]);
         return view('operations.search-result', ['operations' => $operations]);
     }
@@ -202,18 +203,20 @@ class OperationController extends Controller
         $consumer_id = session('consumer_id');
         $description = session('description');
         $sub_consumer_id = session('sub_consumer_id');
+        $checked = session('checked');
         return view('operations.print', [
             'operations' => $operations,
-            'type' => $type,
-            'from' => $from,
-            'to' => $to,
-            'reportDate' => $reportDate,
-            'foulType' => $foulType,
-            'dischangeNumber' => $dischangeNumber,
-            'receiverName' => $receiverName,
-            'consumer_id' => $consumer_id,
+            'type' => $type, //check
+            'from' => $from, //check
+            'to' => $to, //check
+            'reportDate' => $reportDate, //check
+            'foulType' => $foulType, //check
+            'dischangeNumber' => $dischangeNumber, //check
+            'receiverName' => $receiverName, //check
+            'consumer_id' => $consumer_id, //check
             'description' => $description,
-            'sub_consumer_id' => $sub_consumer_id,
+            'sub_consumer_id' => $sub_consumer_id, //check
+            'checked' => $checked
         ]);
     }
     public function createIncome()

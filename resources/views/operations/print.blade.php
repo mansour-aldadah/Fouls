@@ -95,39 +95,52 @@
                                 <br>
                                 <br>
                                 <b class="mt-2" style="font-size: 24px">
-                                    مرفق لديكم التقرير
-                                    @if ($reportDate == 'يومي')
-                                        اليومي
+                                    @if ($dischangeNumber)
+                                        مرفق لديكم التقرير التالي لعملية الصرف برقم سند الصرف ({{ $dischangeNumber }})
                                     @else
-                                        التالي
-                                    @endif
-                                    @if ($type == 'صرف')
-                                        لعمليات الصرف
-                                    @elseif($type == 'وارد')
-                                        للعمليات الواردة
-                                    @else
-                                        لجميع العمليات
-                                    @endif
-                                    @if ($consumer_id)
-                                        @if ($sub_consumer_id)
-                                            للمستهلك
-                                            ({{ App\Models\SubConsumer::findOrFail($sub_consumer_id)->details }})
+                                        مرفق لديكم التقرير
+                                        @if ($reportDate == 'يومي')
+                                            اليومي
                                         @else
-                                            للمستهلكين ({{ App\Models\Consumer::findOrFail($consumer_id)->name }})
+                                            التالي
                                         @endif
-                                    @endif
-                                    @if ($reportDate == 'يومي')
-                                        لتاريخ {{ $from }}
-                                    @elseif($reportDate == 'لفترة')
-                                        للفترة من {{ $from }} إلى {{ $to }}
-                                    @else
-                                        @if ($from && $to == null)
+                                        @if ($type == 'صرف')
+                                            لعمليات الصرف
+                                        @elseif($type == 'وارد')
+                                            للعمليات الواردة
+                                        @else
+                                            لجميع العمليات
+                                        @endif
+                                        @if ($checked)
+                                            التي تحت المراجعة
+                                        @endif
+                                        @if ($consumer_id)
+                                            @if ($sub_consumer_id)
+                                                للمستهلك
+                                                ({{ App\Models\SubConsumer::findOrFail($sub_consumer_id)->details }})
+                                            @else
+                                                للمستهلكين ({{ App\Models\Consumer::findOrFail($consumer_id)->name }})
+                                            @endif
+                                        @endif
+                                        @if ($foulType)
+                                            من نوع وقود ({{ $foulType }})
+                                        @endif
+                                        @if ($receiverName)
+                                            الذي استلمها ({{ $receiverName }})
+                                        @endif
+                                        @if ($reportDate == 'يومي')
                                             لتاريخ {{ $from }}
-                                        @elseif($from && $to)
+                                        @elseif($reportDate == 'لفترة')
                                             للفترة من {{ $from }} إلى {{ $to }}
+                                        @else
+                                            @if ($from && $to == null)
+                                                لتاريخ {{ $from }}
+                                            @elseif($from && $to)
+                                                للفترة من {{ $from }} إلى {{ $to }}
+                                            @endif
                                         @endif
+                                        :
                                     @endif
-                                    :
                                 </b>
                             </p>
                         </div>
@@ -239,40 +252,51 @@
                         <br>
                         <br>
                         <b class="mt-2" style="font-size: 24px">
-                            مرفق لديكم التقرير
-                            @if ($reportDate == 'يومي')
-                                اليومي
+                            @if ($dischangeNumber)
+                                مرفق لديكم التقرير التالي لعملية الصرف برقم سند الصرف ({{ $dischangeNumber }})
                             @else
-                                التالي
-                            @endif
-                            @if ($type == 'صرف')
-                                لعمليات الصرف
-                            @elseif($type == 'وارد')
-                                للعمليات الواردة
-                            @else
-                                لجميع العمليات
-                            @endif
-
-                            @if ($consumer_id)
-                                @if ($sub_consumer_id)
-                                    للمستهلك ({{ App\Models\SubConsumer::findOrFail($sub_consumer_id)->details }})
+                                مرفق لديكم التقرير
+                                @if ($reportDate == 'يومي')
+                                    اليومي
                                 @else
-                                    للمستهلكين ({{ App\Models\Consumer::findOrFail($consumer_id)->name }})
+                                    التالي
                                 @endif
-                            @endif
-
-                            @if ($reportDate == 'يومي')
-                                لتاريخ {{ $from }}
-                            @elseif($reportDate == 'لفترة')
-                                للفترة من {{ $from }} إلى {{ $to }}
-                            @else
-                                @if ($from && $to == null)
+                                @if ($type == 'صرف')
+                                    لعمليات الصرف
+                                @elseif($type == 'وارد')
+                                    للعمليات الواردة
+                                @else
+                                    لجميع العمليات
+                                @endif
+                                @if ($checked)
+                                    التي تحت المراجعة
+                                @endif
+                                @if ($consumer_id)
+                                    @if ($sub_consumer_id)
+                                        للمستهلك ({{ App\Models\SubConsumer::findOrFail($sub_consumer_id)->details }})
+                                    @else
+                                        للمستهلكين ({{ App\Models\Consumer::findOrFail($consumer_id)->name }})
+                                    @endif
+                                @endif
+                                @if ($foulType)
+                                    من نوع وقود ({{ $foulType }})
+                                @endif
+                                @if ($receiverName)
+                                    الذي استلمها ({{ $receiverName }})
+                                @endif
+                                @if ($reportDate == 'يومي')
                                     لتاريخ {{ $from }}
-                                @elseif($from && $to)
+                                @elseif($reportDate == 'لفترة')
                                     للفترة من {{ $from }} إلى {{ $to }}
+                                @else
+                                    @if ($from && $to == null)
+                                        لتاريخ {{ $from }}
+                                    @elseif($from && $to)
+                                        للفترة من {{ $from }} إلى {{ $to }}
+                                    @endif
                                 @endif
+                                :
                             @endif
-                            :
                         </b>
                     </p>
                 </div>
