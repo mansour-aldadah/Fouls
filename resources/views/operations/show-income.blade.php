@@ -14,6 +14,9 @@
         </div>
     @endif
 
+    <div class="d-none">
+        {{ $page = 'show' }}
+    </div>
     <div class="card">
         <div class="card-header p-4">
         </div>
@@ -35,7 +38,7 @@
                                 <div class="info-box-content">
                                     <span class="info-box-text text-center text-muted">الكمية</span>
                                     <span
-                                        class="info-box-number text-center text-muted mb-0">{{ number_format($operation->amount) }}
+                                        class="info-box-number text-center text-muted mb-0">{{ number_format($operation->amount, 2) }}
                                         (لتر)</span>
                                 </div>
                             </div>
@@ -68,7 +71,7 @@
 
                     <div class="text-muted">
                         <p class="text-sm">تم استيراد
-                            <b class="d-inline">{{ number_format($operation->amount) }}</b> (لتر)
+                            <b class="d-inline">{{ number_format($operation->amount, 2) }}</b> (لتر)
                             <b class="d-inline">{{ $operation->foulType }}</b>
                             وذلك بتاريخ
                             <b class="d-inline">{{ $operation->new_date }}</b>
@@ -77,12 +80,12 @@
                     </ul>
                     <div class="text-center mt-5 mb-3">
                         @if ($operation->type == 'وارد')
-                            <a href="{{ route('operations.edit-income', $operation->id) }}" class="btn btn-sm btn-info"
-                                style="width: 100px"><i class="fas fa-edit"></i> تعديل
+                            <a href="{{ route('operations.edit-income', [$operation->id, $page]) }}"
+                                class="btn btn-sm btn-info" style="width: 100px"><i class="fas fa-edit"></i> تعديل
                             </a>
                         @else
-                            <a href="{{ route('operations.edit-outcome', $operation->id) }}" class="btn btn-sm btn-info"
-                                style="width: 100px"><i class="fas fa-edit"></i> تعديل
+                            <a href="{{ route('operations.edit-outcome', [$operation->id, $page]) }}"
+                                class="btn btn-sm btn-info" style="width: 100px"><i class="fas fa-edit"></i> تعديل
                             </a>
                         @endif
                         <a href="#" class="btn btn-sm btn-danger"

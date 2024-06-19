@@ -51,6 +51,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('operations', OperationController::class);
     Route::get('movement_records/{sub_consumer_id}/create', [MovementRecordController::class, 'create'])->name('movement_records.create');
     Route::post('movement_records/{sub_consumer_id}', [MovementRecordController::class, 'store'])->name('movement_records.store');
+    Route::get('movement_records/{sub_consumer_id}/edit/{movement_record}', [MovementRecordController::class, 'edit'])->name('movement_records.edit');
+    Route::PUT('movement_records/{movement_record}', [MovementRecordController::class, 'update'])->name('movement_records.update');
+    Route::delete('movement_records/{movement_record}', [MovementRecordController::class, 'destroy'])->name('movement_records.destroy');
     // Route::resource('movement_records', MovementRecordController::class);
     Route::get('sub_consumers/{consumer}/create', [SubConsumerController::class, 'create'])->name('sub_consumers.create');
     Route::view('/invoice-print', 'invoice-print')->name('invoice-print');

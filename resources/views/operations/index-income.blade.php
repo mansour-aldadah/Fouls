@@ -42,7 +42,7 @@
                             </td>
                             <td style=" text-align: center">{{ $operation->type }}</td>
                             <td style=" text-align: center">{{ $operation->foulType }}</td>
-                            <td style=" text-align: center">{{ number_format($operation->amount) }}</td>
+                            <td style=" text-align: center">{{ number_format($operation->amount, 2) }}</td>
                             <td style=" text-align: center">{{ $operation->new_date }}</td>
 
                             <td class="text-center align-middle">

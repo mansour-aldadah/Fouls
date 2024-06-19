@@ -55,7 +55,6 @@
                     <a href="{{ route('dashboard') }}" class="nav-link">الرئيسية</a>
                 </li>
             </ul>
-            </form>
         </nav>
         <!-- /.navbar -->
 
@@ -97,12 +96,14 @@
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="{{ route('consumers.index') }}" class="nav-link">
-                                        <i class="far fa-eye nav-icon ml-3 mr-0"></i>
-                                        <p>عرض</p>
-                                    </a>
-                                </li>
+                                @if (App\Models\Consumer::first())
+                                    <li class="nav-item">
+                                        <a href="{{ route('consumers.index') }}" class="nav-link">
+                                            <i class="far fa-eye nav-icon ml-3 mr-0"></i>
+                                            <p>عرض</p>
+                                        </a>
+                                    </li>
+                                @endif
                                 <li class="nav-item">
                                     <a href="{{ route('consumers.create') }}" class="nav-link">
                                         <i class="fas fa-user-plus nav-icon ml-3 mr-0"></i>
@@ -113,37 +114,46 @@
                         </li>
                     </ul>
                 </nav>
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
-                        data-accordion="false">
-                        <!-- Add icons to the links using the .nav-icon class
+                @if (App\Models\Consumer::first() || App\Models\subConsumer::first())
+                    <nav class="mt-2">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                            data-accordion="false">
+                            <!-- Add icons to the links using the .nav-icon class
                             with font-awesome or any other icon font library -->
-                        <li class="nav-item has-treeview menu-open">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-users "></i>
-                                <p>
-                                    المستهلكين الفرعيين
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="{{ route('sub_consumers.index') }}" class="nav-link">
-                                        <i class="far fa-eye nav-icon ml-3 mr-0"></i>
-                                        <p>عرض</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('sub_consumers.create', App\Models\Consumer::first()) }}"
-                                        class="nav-link">
-                                        <i class="fas fa-user-plus nav-icon ml-3 mr-0"></i>
-                                        <p>إضافة</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </nav>
+                            <li class="nav-item has-treeview menu-open">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-users "></i>
+                                    <p>
+                                        المستهلكين الفرعيين
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    @if (App\Models\subConsumer::first())
+                                        <li class="nav-item">
+                                            <a href="{{ route('sub_consumers.index') }}" class="nav-link">
+                                                <i class="far fa-eye nav-icon ml-3 mr-0"></i>
+                                                <p>عرض</p>
+                                            </a>
+                                        </li>
+                                    @endif
+
+                                    @if (App\Models\Consumer::first())
+                                        <li class="nav-item">
+                                            <a href="{{ route('sub_consumers.create', App\Models\Consumer::first()) }}"
+                                                class="nav-link">
+                                                <i class="fas fa-user-plus nav-icon ml-3 mr-0"></i>
+                                                <p>إضافة</p>
+                                            </a>
+                                        </li>
+                                    @endif
+
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                @endif
+
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                         data-accordion="false">
@@ -158,12 +168,14 @@
                                 </p>
                             </a>
                             <ul class="nav nav-treeview" style="display: block;">
-                                <li class="nav-item">
-                                    <a href="{{ route('operations.index') }}" class="nav-link">
-                                        <i class="far fa-eye nav-icon ml-3 mr-0"></i>
-                                        <p>عرض</p>
-                                    </a>
-                                </li>
+                                @if (App\Models\Operation::first())
+                                    <li class="nav-item">
+                                        <a href="{{ route('operations.index') }}" class="nav-link">
+                                            <i class="far fa-eye nav-icon ml-3 mr-0"></i>
+                                            <p>عرض</p>
+                                        </a>
+                                    </li>
+                                @endif
                                 <li class="nav-item">
                                     <a href="#" class="nav-link">
                                         <i class="far fa-plus-square nav-icon ml-3 mr-0"></i>
@@ -187,12 +199,14 @@
                                         </li>
                                     </ul>
                                 </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('operations.search') }}" class="nav-link">
-                                        <i class="fas fa-search nav-icon ml-3 mr-0"></i>
-                                        <p>بحث</p>
-                                    </a>
-                                </li>
+                                @if (App\Models\Operation::first())
+                                    <li class="nav-item">
+                                        <a href="{{ route('operations.search') }}" class="nav-link">
+                                            <i class="fas fa-search nav-icon ml-3 mr-0"></i>
+                                            <p>بحث</p>
+                                        </a>
+                                    </li>
+                                @endif
                             </ul>
                         </li>
                     </ul>

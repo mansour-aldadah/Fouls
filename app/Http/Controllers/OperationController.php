@@ -268,9 +268,6 @@ class OperationController extends Controller
         $operation->dischangeNumber = $request->input('dischangeNumber');
         $operation->receiverName = $request->input('receiverName');
         $operation->foulType = $request->input('foulType');
-        ///////////////////////////
-
-        //////////////////////////
         $operation->description = $request->input('description');
         $isSaved = $operation->save();
         session()->flash('messege', $isSaved ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة');
@@ -285,7 +282,7 @@ class OperationController extends Controller
             'foulType' => 'required',
         ], [
             'amount.required' => 'أدخل كمية الوقود',
-            'amount.number' => 'يجب أن تكون كمية الوقود رقماً',
+            'amount.numeric' => 'يجب أن تكون كمية الوقود رقماً',
             'date' => 'أدخل التاريخ',
             'foulType' => 'أدخل نوع الوقود',
         ]);
@@ -355,15 +352,15 @@ class OperationController extends Controller
         // dd($request->page);
         $request->validate([
             'sub_consumer_name' => 'required',
-            'amount' => ['required', 'number'],
+            'amount' => ['required', 'numeric'],
             'date' => 'required',
             'foulType' => 'required',
             'receiverName' => 'required',
-            'dischangeNumber' => ['required', 'unique:operations', 'regex:/^\d{4}$/']
+            'dischangeNumber' => ['required', 'regex:/^\d{4}$/']
         ], [
             'sub_consumer_name' => 'أدخل اسم المستهلك',
             'amount.required' => 'أدخل كمية الوقود',
-            'amount.number' => 'يجب أن تكون كمية الوقود رقماً',
+            'amount.numeric' => 'يجب أن تكون كمية الوقود رقماً',
             'date' => 'أدخل التاريخ',
             'foulType' => 'أدخل نوع الوقود',
             'receiverName' => 'أدخل اسم المستلم',
@@ -410,7 +407,7 @@ class OperationController extends Controller
             'foulType' => 'required',
         ], [
             'amount.required' => 'أدخل كمية الوقود',
-            'amount.number' => 'يجب أن تكون كمية الوقود رقماً',
+            'amount.numeric' => 'يجب أن تكون كمية الوقود رقماً',
             'date' => 'أدخل التاريخ',
             'foulType' => 'أدخل نوع الوقود',
         ]);

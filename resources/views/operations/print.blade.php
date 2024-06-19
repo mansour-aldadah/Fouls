@@ -187,7 +187,8 @@
                                                     <td style=" text-align: center">-</td>
                                                 @endif
                                                 <td style=" text-align: center">{{ $operation->foulType }}</td>
-                                                <td style=" text-align: center">{{ number_format($operation->amount) }}
+                                                <td style=" text-align: center">
+                                                    {{ number_format($operation->amount, 2) }}
                                                 </td>
                                                 <td style=" text-align: center">{{ $operation->new_date }}</td>
                                             </tr>
@@ -330,7 +331,8 @@
                                                 <td style=" text-align: center">-</td>
                                             @endif
                                             <td style=" text-align: center">{{ $operation->foulType }}</td>
-                                            <td style=" text-align: center">{{ number_format($operation->amount) }}
+                                            <td style=" text-align: center">
+                                                {{ number_format($operation->amount, 2) }}
                                             </td>
                                             <td style=" text-align: center">{{ $operation->new_date }}</td>
                                         </tr>

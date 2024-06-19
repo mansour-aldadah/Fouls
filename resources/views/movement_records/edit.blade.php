@@ -1,8 +1,8 @@
 @extends('parent')
 
-@section('title', 'إضافة قراءة عدّاد')
+@section('title', 'تعديل قراءة عدّاد')
 
-@section('header', 'إضافة قراءة عدّاد')
+@section('header', 'تعديل قراءة عدّاد')
 
 @section('content')
 
@@ -42,7 +42,7 @@
                                 <div class="info-box-content">
                                     <span class="info-box-text text-center text-muted">قراءة العدّاد السابقة</span>
                                     <span class="info-box-number text-center text-muted mb-0">
-                                        @if ($subConsumer->movementRecord()->first())
+                                        @if ($subConsumer->movementRecord)
                                             {{ number_format(+$subConsumer->movementRecord()->orderByDesc('date')->orderByDesc('created_at')->first()->record) }}
                                         @else
                                             لا يوجد
@@ -59,7 +59,7 @@
                             <div class="form-group">
                                 <label for="record">قراءة العداد</label>
                                 <input type="text" class="form-control" id="record" name="record"
-                                    value="@if (old('record')) {{ old('record') }} @endif"
+                                    value="@if (old('record')) {{ old('record') }} @else {{ $movementRecord->record }} @endif"
                                     placeholder="أدخل قراءة العدّاد">
                             </div>
                         </div>
@@ -75,7 +75,9 @@
                 </div>
                 <!-- /.card-body -->
                 <div class="card-footer">
-                    <button type="button" onclick="store({{ $subConsumer->id }})" class="btn btn-primary">إضافة</button>
+                    <button type="button"
+                        onclick="update({{ $movementRecord->id }} , {{ $movementRecord->sub_consumer_id }})"
+                        class="btn btn-primary">تعديل</button>
                 </div>
             </form>
         </div>
@@ -85,15 +87,15 @@
 @section('script')
 
     <script>
-        function store(id) {
+        function update(id, id2) {
             console.log('test');
-            axios.post('/movement_records/' + id, {
+            axios.put('/movement_records/' + id, {
                     record: document.getElementById('record').value,
                     date: document.getElementById('date').value,
-                    subConsumerId: id
+                    subConsumerId: id2
                 })
                 .then(function(response) {
-                    document.getElementById('form').reset();
+                    window.location.href = '/sub_consumers/' + id2;
                     showMessage(response.data);
                 })
                 .catch(function(error) {

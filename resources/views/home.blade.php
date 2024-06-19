@@ -21,7 +21,8 @@
                 <!-- small box -->
                 <div class="small-box bg-danger">
                     <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\SubConsumer::numberOfSubConsumers()) }}
+                        <h3 class="d-inline-block ml-2">
+                            {{ number_format(App\Models\SubConsumer::numberOfSubConsumers()) }}
                             <h5 class="d-inline-block">
                                 (مستهلك)</h5>
                         </h3>
@@ -39,7 +40,7 @@
                 <!-- small box -->
                 <div class="small-box bg-success">
                     <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getIncomes()) }} <h5
+                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getIncomes(), 2) }} <h5
                                 class="d-inline-block">
                                 (لتر)</h5>
                         </h3>
@@ -57,7 +58,7 @@
                 <!-- small box -->
                 <div class="small-box bg-info">
                     <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getIncomeMonth()) }} <h5
+                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getIncomeMonth(), 2) }} <h5
                                 class="d-inline-block">
                                 (لتر)</h5>
                         </h3>
@@ -76,7 +77,7 @@
                 <!-- small box -->
                 <div class="small-box bg-warning">
                     <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getTotal()) }} <h5
+                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getTotal(), 2) }} <h5
                                 class="d-inline-block">
                                 (لتر)</h5>
                         </h3>
@@ -97,7 +98,7 @@
                 <!-- small box -->
                 <div class="small-box bg-info">
                     <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getToday()) }} <h5
+                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getToday(), 2) }} <h5
                                 class="d-inline-block">
                                 (لتر)</h5>
                         </h3>
@@ -116,7 +117,7 @@
                 <!-- small box -->
                 <div class="small-box bg-warning">
                     <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getWeek()) }} <h5
+                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getWeek(), 2) }} <h5
                                 class="d-inline-block">
                                 (لتر)</h5>
                         </h3>
@@ -135,7 +136,7 @@
                 <!-- small box -->
                 <div class="small-box bg-success">
                     <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getMonth()) }} <h5
+                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getMonth(), 2) }} <h5
                                 class="d-inline-block">
                                 (لتر)</h5>
                         </h3>
@@ -153,7 +154,7 @@
                 <!-- small box -->
                 <div class="small-box bg-danger">
                     <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getOutcomes()) }} <h5
+                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getOutcomes(), 2) }} <h5
                                 class="d-inline-block">
                                 (لتر)</h5>
                         </h3>
@@ -229,7 +230,7 @@
                                         -</td>
                                 @endif
                                 <td style=" text-align: center">{{ $operation->foulType }}</td>
-                                <td style=" text-align: center">{{ number_format($operation->amount) }}</td>
+                                <td style=" text-align: center">{{ number_format($operation->amount, 2) }}</td>
                                 <td style=" text-align: center">{{ $operation->new_date }}</td>
 
                                 <td class="text-center align-middle">

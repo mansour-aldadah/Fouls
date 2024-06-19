@@ -47,7 +47,7 @@
                                             class="btn btn-success"><i class="fas fa-edit"></i></a>
                                         @if ($sub_consumer->hasRecord)
                                             <a href="{{ route('movement_records.create', $sub_consumer->id) }}"
-                                                class="btn btn-warning"><i class="nav-icon fas fa-tachometer-alt"></i></a>
+                                                class="btn btn-secondary"><i class="nav-icon fas fa-tachometer-alt"></i></a>
                                         @endif
                                         <a href="#"
                                             onclick="confirmDestroy('{{ $sub_consumer->details }}' , '{{ $sub_consumer->id }}' , this)"

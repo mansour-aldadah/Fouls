@@ -25,7 +25,6 @@ class MovementRecordController extends Controller
     {
         $subConsumer = SubConsumer::findOrFail($id);
         $consumers = Consumer::all();
-        $subConsumers = SubConsumer::all();
         return view('movement_records.create', ['subConsumer' => $subConsumer, 'consumers' => $consumers]);
     }
 
@@ -71,9 +70,11 @@ class MovementRecordController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(MovementRecord $movementRecord)
+    public function edit($id, MovementRecord $movementRecord)
     {
-        //
+        $subConsumer = SubConsumer::findOrFail($id);
+        $consumers = Consumer::all();
+        return response()->view('movement_records.edit', ['movementRecord' => $movementRecord, 'subConsumer' => $subConsumer, 'consumers' => $consumers]);
     }
 
     /**
@@ -81,7 +82,29 @@ class MovementRecordController extends Controller
      */
     public function update(Request $request, MovementRecord $movementRecord)
     {
-        //
+        $validator = Validator($request->all(),  [
+            'date' => 'required',
+            'record' => 'required'
+        ], [
+            'date.required' => 'أدخل التاريخ',
+            'record.required' => 'أدخل قراءة العدّاد'
+        ]);
+        // dd('dsafs');
+        if (!$validator->fails()) {
+            $movementRecord->sub_consumer_id = $request->subConsumerId;
+            $movementRecord->date = $request->input('date');
+            $movementRecord->record = $request->input('record');
+            $isUpdated = $movementRecord->save();
+            return response()->json([
+                'icon' => 'success',
+                'message' => $isUpdated ? 'تم التعديل بنجاح' : 'فشل في التعديل'
+            ], $isUpdated ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
+        } else {
+            return response()->json([
+                'icon' => 'warning',
+                'message' => $validator->getMessageBag()->first()
+            ], Response::HTTP_BAD_REQUEST);
+        }
     }
 
     /**
@@ -89,6 +112,10 @@ class MovementRecordController extends Controller
      */
     public function destroy(MovementRecord $movementRecord)
     {
-        //
+        $isDeleted = $movementRecord->delete();
+        return response()->json([
+            'icon' => $isDeleted ? 'success' : 'error',
+            'message' => $isDeleted ? 'تم حذف قراءة العدّاد '  : 'فشل حذف قراءة العدّاد '
+        ], $isDeleted ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
     }
 }

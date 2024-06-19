@@ -24,10 +24,11 @@ class SubConsumer extends Model
     }
     public function getDistance()
     {
-        // dd($this->movementRecord()->orderByDesc('date')->orderByDesc('created_at')->get()[0]->record);
-        $last = ($this->movementRecord()->orderByDesc('date')->orderByDesc('created_at')->get()[0]->record);
-        $beforeLast = ($this->movementRecord()->orderByDesc('date')->orderByDesc('created_at')->get()[1]->record);
-        // dd($last . " " . $beforeLast);
+        $last = ($this->movementRecord()->orderByDesc('date')->orderByDesc('created_at')->get()[0]->record) ?? 0;
+        $beforeLast = ($this->movementRecord()->orderByDesc('date')->orderByDesc('created_at')->get()[1]->record) ?? 0;
+        if ($beforeLast == 0) {
+            return 0;
+        }
         return +$last - +$beforeLast;
     }
 
