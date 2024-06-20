@@ -114,7 +114,7 @@
                         </li>
                     </ul>
                 </nav>
-                @if (App\Models\Consumer::first() || App\Models\subConsumer::first())
+                @if (App\Models\Consumer::first() || App\Models\SubConsumer::first())
                     <nav class="mt-2">
                         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                             data-accordion="false">
@@ -129,7 +129,7 @@
                                     </p>
                                 </a>
                                 <ul class="nav nav-treeview">
-                                    @if (App\Models\subConsumer::first())
+                                    @if (App\Models\SubConsumer::first())
                                         <li class="nav-item">
                                             <a href="{{ route('sub_consumers.index') }}" class="nav-link">
                                                 <i class="far fa-eye nav-icon ml-3 mr-0"></i>
