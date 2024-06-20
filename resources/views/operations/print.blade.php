@@ -96,7 +96,7 @@
                                 <br>
                                 <b class="mt-2" style="font-size: 24px">
                                     @if ($dischangeNumber)
-                                        مرفق لديكم التقرير التالي لعملية الصرف برقم سند الصرف ({{ $dischangeNumber }})
+                                        مرفق لديكم التقرير التالي لعملية الصرف برقم سند الصرف ({{ $dischangeNumber }}):
                                     @else
                                         مرفق لديكم التقرير
                                         @if ($reportDate == 'يومي')
@@ -253,7 +253,7 @@
                         <br>
                         <b class="mt-2" style="font-size: 24px">
                             @if ($dischangeNumber)
-                                مرفق لديكم التقرير التالي لعملية الصرف برقم سند الصرف ({{ $dischangeNumber }})
+                                مرفق لديكم التقرير التالي لعملية الصرف برقم سند الصرف ({{ $dischangeNumber }}):
                             @else
                                 مرفق لديكم التقرير
                                 @if ($reportDate == 'يومي')
