@@ -29,7 +29,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('consumers', ConsumerController::class);
-    Route::get('sub_consumers/{consumer}/create', [SubConsumerController::class, 'create'])->name('sub_consumers.create');
     Route::resource('sub_consumers', SubConsumerController::class);
     Route::POST('operations/store-income', [OperationController::class, 'store_income'])->name('operations.store-income');
     Route::get('operations/create-income', [OperationController::class, 'createIncome'])->name('operations.create-income');
@@ -55,6 +54,8 @@ Route::middleware('auth')->group(function () {
     Route::get('movement_records/{sub_consumer_id}/edit/{movement_record}', [MovementRecordController::class, 'edit'])->name('movement_records.edit');
     Route::PUT('movement_records/{movement_record}', [MovementRecordController::class, 'update'])->name('movement_records.update');
     Route::delete('movement_records/{movement_record}', [MovementRecordController::class, 'destroy'])->name('movement_records.destroy');
+    Route::get('sub_consumers/{consumer}/create', [SubConsumerController::class, 'create'])->name('sub_consumers.create');
+
     // Route::resource('movement_records', MovementRecordController::class);
     Route::view('/invoice-print', 'invoice-print')->name('invoice-print');
 });
