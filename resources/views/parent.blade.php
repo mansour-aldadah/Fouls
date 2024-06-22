@@ -56,6 +56,31 @@
                     <a href="{{ route('dashboard') }}" class="nav-link">الرئيسية</a>
                 </li>
             </ul>
+            <ul class="navbar-nav mr-auto-navbav">
+                <!-- Notifications Dropdown Menu -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="true">
+                        <i class="fas fa-cog"></i></a>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                        <span class="dropdown-item dropdown-header text-center">إعدادات</span>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ route('users.password-reset', ['user' => Illuminate\Support\Facades\Auth::user()]) }}"
+                            class="dropdown-item text-center">
+                            تغيير كلمة المرور
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <form method="POST" action="http://127.0.0.1:8000/logout">
+                            @csrf
+                            <a class="dropdown-item text-center block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
+                                href="http://127.0.0.1:8000/logout"
+                                onclick="event.preventDefault();
+                                                this.closest('form').submit();">
+                                تسجيل الخروج
+                            </a>
+                        </form>
+                    </div>
+                </li>
+            </ul>
         </nav>
         <!-- /.navbar -->
 
@@ -120,17 +145,54 @@
             <div class="sidebar">
                 <!-- Sidebar user panel (optional) -->
 
-                {{-- <div class="user-panel mt-3 pb-3 mb-3 d-flex ml-2 mr-0">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex ml-2 mr-0">
                     <div class="image ">
                         <img src="{{ asset('assets/dist/img/user2-160x160.jpg') }}" class="img-circle elevation-2"
                             alt="User Image">
                     </div>
                     <div class="info">
-                        <a href="#" class="d-block">أي حد</a>
+                        <a href="#" class="d-block"> أهلاً
+                            {{ Illuminate\Support\Facades\Auth::user()->username }}</a>
                     </div>
-                </div> --}}
+                </div>
 
                 <!-- Sidebar Menu -->
+
+                @if (Illuminate\Support\Facades\Auth::user()->role == 'مدير')
+                    <nav class="mt-2">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                            data-accordion="false">
+                            <!-- Add icons to the links using the .nav-icon class
+                        with font-awesome or any other icon font library -->
+                            <li class="nav-item has-treeview menu-open">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-users "></i>
+                                    <p>
+                                        المستخدمين
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    @if (App\Models\User::first())
+                                        <li class="nav-item">
+                                            <a href="{{ route('users.index') }}" class="nav-link">
+                                                <i class="far fa-eye nav-icon ml-3 mr-0"></i>
+                                                <p>عرض</p>
+                                            </a>
+                                        </li>
+                                    @endif
+                                    <li class="nav-item">
+                                        <a href="{{ route('users.create') }}" class="nav-link">
+                                            <i class="fas fa-user-plus nav-icon ml-3 mr-0"></i>
+                                            <p>إضافة</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                @endif
+
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                         data-accordion="false">
@@ -234,12 +296,15 @@
                                         </p>
                                     </a>
                                     <ul class="nav nav-treeview" style="display: none;">
-                                        <li class="nav-item">
-                                            <a href="{{ route('operations.create-outcome') }}" class="nav-link">
-                                                <i class="fas fa-arrow-up nav-icon ml-5 mr-0"></i>
-                                                <p>صرف</p>
-                                            </a>
-                                        </li>
+                                        @if (App\Models\Operation::first())
+                                            <li class="nav-item">
+                                                <a href="{{ route('operations.create-outcome') }}" class="nav-link">
+                                                    <i class="fas fa-arrow-up nav-icon ml-5 mr-0"></i>
+                                                    <p>صرف</p>
+                                                </a>
+                                            </li>
+                                        @endif
+
                                         <li class="nav-item">
                                             <a href="{{ route('operations.create-income') }}" class="nav-link">
                                                 <i class="fas fa-arrow-down nav-icon ml-5 mr-0"></i>

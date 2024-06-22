@@ -6,13 +6,6 @@
 
 @section('content')
 
-    @if (session()->has('messege'))
-        <div class="alert alert-success alert-dismissible">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>
-            <h5><i class="icon fas fa-check"></i> تأكيد !</h5>
-            {{ session('messege') }}
-        </div>
-    @endif
     <div class="d-none">{{ $counter = 1 }}</div>
     <div class="container">
         <div class="card">

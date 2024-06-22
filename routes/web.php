@@ -5,6 +5,7 @@ use App\Http\Controllers\MovementRecordController;
 use App\Http\Controllers\OperationController;
 use App\Http\Controllers\SubConsumerController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use App\Models\MovementRecord;
 use App\Models\Operation;
 use Illuminate\Support\Facades\Route;
@@ -23,8 +24,13 @@ Route::get('/dashboard', function () {
     return view('home', ['operations' => $operaions]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'isAdmin'])->group(function () {
+    Route::resource('users', UserController::class);
+});
 
+Route::middleware('auth')->group(function () {
+    Route::get('users/password-reset/{user}', [UserController::class, 'passwordReset'])->name('users.password-reset');
+    Route::put('users/password-reset/{user}', [UserController::class, 'updatePassword'])->name('users.updatePassword');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
