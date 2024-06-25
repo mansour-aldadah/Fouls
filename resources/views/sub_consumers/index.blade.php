@@ -27,6 +27,7 @@
                         <th>المستهلك الرئيسي</th>
                         <th>وصف</th>
                         <th style="width: 200px; text-align: center">عدد عمليات الصرف</th>
+                        <th style="width: 200px; text-align: center">آخر قراءة عدّاد</th>
                         <th style="width: 200px; text-align: center">الإعدادات</th>
                     </tr>
                 </thead>
@@ -42,7 +43,14 @@
                                 <td>-</td>
                             @endif
                             <td class="text-center align-middle">{{ $subConsumer->operations()->count() }}</td>
+                            <td class="text-center align-middle">
 
+                                @if ($subConsumer->movementRecords()->first())
+                                    {{ number_format($subConsumer->movementRecords()->orderByDesc('date')->orderByDesc('created_at')->get()[0]->record) }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td class="text-center align-middle">
                                 <div class="btn-group">
                                     <a href="{{ route('sub_consumers.show', $subConsumer->id) }}" class="btn btn-info"

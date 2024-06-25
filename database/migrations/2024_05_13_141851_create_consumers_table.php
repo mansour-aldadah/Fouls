@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('consumers', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->softDeletes();
             $table->timestamps();
         });

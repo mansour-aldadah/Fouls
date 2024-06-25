@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('sub_consumers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('consumer_id')->constrained()->restrictOnDelete();
-            $table->string('details')->unique();
+            $table->string('details');
             $table->string('description')->nullable();
             $table->boolean('hasRecord')->default(false);
             $table->softDeletes();

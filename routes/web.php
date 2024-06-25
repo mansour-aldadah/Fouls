@@ -5,6 +5,7 @@ use App\Http\Controllers\MovementRecordController;
 use App\Http\Controllers\OperationController;
 use App\Http\Controllers\SubConsumerController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TravelController;
 use App\Http\Controllers\UserController;
 use App\Models\MovementRecord;
 use App\Models\Operation;
@@ -26,6 +27,10 @@ Route::get('/dashboard', function () {
 
 Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::resource('users', UserController::class);
+    Route::resource('travels', TravelController::class);
+});
+Route::middleware(['auth', 'isConsumer'])->group(function () {
+    Route::resource('travels', TravelController::class);
 });
 
 Route::middleware('auth')->group(function () {
