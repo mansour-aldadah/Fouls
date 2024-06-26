@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\SubConsumer;
 use App\Models\Consumer;
+use App\Models\MovementRecord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 
 class SubConsumerController extends Controller
@@ -33,18 +35,25 @@ class SubConsumerController extends Controller
      */
     public function store(Request $request)
     {
+        $hasRecord = $request->input('hasRecord');
         $validator = Validator(
             $request->all(),
             [
                 'consumer_id' => 'required',
-                'details' => 'required|unique:sub_consumers'
+                'details' => 'required|unique:sub_consumers',
+                'record' => Rule::requiredIf(fn () => $hasRecord == 1),
+                'date' => Rule::requiredIf(fn () => $hasRecord == 1),
             ],
             [
-                'consumer_id.required' => 'أدخل اسم المستهلك',
-                'details.required' => 'أدخل تفاصيل المستهلك',
-                'details.unique' => 'هذا المستهلك موجود مسبقاً'
+                'consumer_id.required' => 'أدخل اسم المستهلك الرئيسي',
+                'details.required' => 'أدخل اسم المستهلك',
+                'details.unique' => 'هذا المستهلك موجود مسبقاً',
+                'record' => 'أدخل قراءة العدّاد',
+                'date' => 'أدخل التاريخ'
             ]
         );
+
+
         if (!$validator->fails()) {
             $sub_consumer = new SubConsumer();
             $sub_consumer->consumer_id = $request->input('consumer_id');
@@ -56,6 +65,13 @@ class SubConsumerController extends Controller
                 $sub_consumer->hasRecord = false;
             }
             $isSaved = $sub_consumer->save();
+            if ($request->input('hasRecord')) {
+                $movementRecord = new MovementRecord();
+                $movementRecord->sub_consumer_id = $sub_consumer->id;
+                $movementRecord->record = $request->input('record');
+                $movementRecord->date = $request->input('date');
+                $isSaved2 = $movementRecord->save();
+            }
             return response()->json([
                 'icon' => 'success',
                 'message' => $isSaved ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة'

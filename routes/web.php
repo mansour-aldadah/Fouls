@@ -34,6 +34,7 @@ Route::middleware(['auth', 'isConsumer'])->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/operations/check-has-record/{subConsumerId}', [OperationController::class, 'checkHasRecord']);
     Route::get('users/password-reset/{user}', [UserController::class, 'passwordReset'])->name('users.password-reset');
     Route::put('users/password-reset/{user}', [UserController::class, 'updatePassword'])->name('users.updatePassword');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

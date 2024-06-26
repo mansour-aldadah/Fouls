@@ -111,6 +111,12 @@
                             <label class="custom-control-label" for="customSwitch1">تحت المراجعة</label>
                         </div>
                     </div>
+                    <div class="form-group" id="record-group" style="display:none;">
+                        <label for="record">قراءة العدّاد الحالية</label>
+                        <input type="text" class="form-control" id="record" name="record"
+                            value="@if (old('record')) {{ old('record') }} @endif"
+                            placeholder="أدخل قراءة العدّاد الحالية">
+                    </div>
                     <div class="form-group">
                         <label>وصف</label>
                         <textarea class="form-control" name="description" rows="3"
@@ -145,14 +151,35 @@
                                 '<option value="">اختر المستهلك الفرعي</option>');
                             $.each(data, function(key, value) {
                                 $('#sub_consumer_name').append('<option value="' + value
-                                    .id +
-                                    '">' + value.details + '</option>');
+                                    .id + '">' + value.details + '</option>');
                             });
                         }
                     });
                 } else {
                     $('#sub_consumer_name').empty();
                     $('#sub_consumer_name').append('<option value="">اختر المستهلك الفرعي</option>');
+                }
+            });
+
+            $('#sub_consumer_name').on('change', function() {
+                var subConsumerId = $(this).val();
+
+                if (subConsumerId) {
+                    console.log('test');
+                    $.ajax({
+                        url: '/operations/check-has-record/' + subConsumerId,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.hasRecord) {
+                                $('#record-group').show();
+                            } else {
+                                $('#record-group').hide();
+                            }
+                        }
+                    });
+                } else {
+                    $('#record-group').hide();
                 }
             });
         });

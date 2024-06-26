@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Operation;
 use App\Models\Consumer;
+use App\Models\MovementRecord;
 use App\Models\SubConsumer;
 use Carbon\Carbon;
 use Hamcrest\Type\IsInteger;
@@ -234,7 +235,7 @@ class OperationController extends Controller
      */
     public function store(Request $request)
     {
-
+        $record = $request->input('record');
         $request->validate([
             'sub_consumer_name' => 'required',
             'amount' => ['required', 'numeric'],
@@ -273,6 +274,13 @@ class OperationController extends Controller
         $operation->foulType = $request->input('foulType');
         $operation->description = $request->input('description');
         $isSaved = $operation->save();
+        if ($record) {
+            $movementRecord = new MovementRecord();
+            $movementRecord->sub_consumer_id =  $request->input('sub_consumer_name');
+            $movementRecord->record = $request->input('record');
+            $movementRecord->date = $request->input('date');
+            $isSaved2 = $movementRecord->save();
+        }
         session()->flash('messege', $isSaved ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة');
         return redirect()->route('operations.index');
     }
@@ -442,6 +450,13 @@ class OperationController extends Controller
         return redirect()->route('operations.index');
     }
 
+    public function checkHasRecord($subConsumerId)
+    {
+        $subConsumer = SubConsumer::find($subConsumerId);
+
+        // Assuming `hasRecord` is a boolean attribute of the SubConsumer model
+        return response()->json(['hasRecord' => $subConsumer->hasRecord]);
+    }
     /**
      * Remove the specified resource from storage.
      */
