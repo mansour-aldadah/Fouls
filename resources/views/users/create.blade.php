@@ -21,6 +21,11 @@
                             value="{{ old('username') }}" placeholder="أدخل اسم المستخدم">
                     </div>
                     <div class="form-group">
+                        <label for="name">الاسم</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}"
+                            placeholder="أدخل الاسم ">
+                    </div>
+                    <div class="form-group">
                         <label for="password">كلمة المرور</label>
                         <input type="password" class="form-control" value="{{ old('password') }}" id="password"
                             name="password" placeholder="أدخل كلمة المرور">
@@ -71,6 +76,7 @@
             axios.post('/users', {
                     username: document.getElementById('username').value,
                     password: document.getElementById('password').value,
+                    name: document.getElementById('name').value,
                     role: document.getElementById('role').value,
                     consumer_id: document.getElementById('consumer_id').value,
                     password_confirmation: document.getElementById('password_confirmation').value

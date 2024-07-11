@@ -92,22 +92,24 @@ class UserController extends Controller
                 'username' => ['required', 'string', 'max:255'],
                 'password' => ['required', 'confirmed', Password::defaults()],
                 'role' => ['required'],
+                'name' => ['required'],
                 'consumer_id' => Rule::requiredIf(fn () => $role == 'مستهلك')
             ],
             [
                 'username.required' => 'أدخل اسم المستخدم',
                 'password.required' => 'أدخل كلمة المرور',
                 'role' => 'أدخل نوع المستخدم',
+                'name' => 'أدخل الاسم',
                 'password.confirmed' => 'كلمة المرور وتأكيدها غير متطابقتين',
                 'consumer_id' => 'أدخل اسم المستهلكين المسؤول عنهم'
             ]
         );
-        // SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'user_id' cannot be null (Connection: mysql, SQL: insert into `user_consumers` (`consumer_id`, `user_id`, `updated_at`, `created_at`) values (5, ?, 2024-06-30 11:42:57, 2024-06-30 11:42:57))
         if (!$validator->fails()) {
             $user = new User();
             $user->username = $request->username;
             $user->password =  Hash::make($request->password);
             $user->role = $request->input('role');
+            $user->name = $request->input('name');
             $isSaved = $user->save();
             if ($isSaved) {
                 $logFile = new LogFile();
@@ -165,12 +167,14 @@ class UserController extends Controller
             [
                 'username' => ['required', 'string', 'max:255'],
                 'role' => ['required'],
+                'name' => ['required'],
                 'consumer_id' => Rule::requiredIf(fn () => $role == 'مستهلك')
             ],
             [
                 'username.required' => 'أدخل اسم المستخدم',
                 'consumer_id' => 'أدخل اسم المستهلكين المسؤول عنهم',
                 'role' => 'أدخل نوع المستخدم',
+                'name' => 'أدخل الاسم',
             ]
         );
 
@@ -178,6 +182,7 @@ class UserController extends Controller
             $old = $user->replicate();
             $user->username = $request->username;
             $user->role = $request->input('role');
+            $user->name = $request->input('name');
             $isUpdated = $user->save();
             if ($isUpdated) {
                 $logFile = new LogFile();

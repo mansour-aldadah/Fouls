@@ -22,6 +22,12 @@
                             value="@if (old('username')) {{ old('username') }} @else {{ $user->username }} @endif"
                             placeholder="أدخل اسم المستخدم">
                     </div>
+                    <div class="form-group">
+                        <label for="name">الاسم</label>
+                        <input type="text" class="form-control" id="name" name="name"
+                            value="@if (old('name')) {{ old('name') }} @else {{ $user->name }} @endif"
+                            placeholder="أدخل الاسم">
+                    </div>
                     <div class="form-group" data-select2-id="13">
                         <label>نوع المستخدم</label>
                         <select class="form-control select2 select2-hidden-accessible" id="role" name="role"
@@ -73,6 +79,7 @@
         axios.put('/users/' + id, {
                 username: document.getElementById('username').value,
                 role: document.getElementById('role').value,
+                name: document.getElementById('name').value,
                 consumer_id: document.getElementById('consumer_id').value
             })
             .then(function(response) {

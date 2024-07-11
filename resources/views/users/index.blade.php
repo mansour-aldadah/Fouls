@@ -18,6 +18,7 @@
                         <tr>
                             <th style="width: 10px">#</th>
                             <th>اسم المستخدم</th>
+                            <th>الاسم</th>
                             <th style="width: 200px; text-align: center">الإعدادات</th>
                         </tr>
                     </thead>
@@ -26,6 +27,7 @@
                             <tr>
                                 <td>{{ $counter++ }}</td>
                                 <td>{{ $user->username }}</td>
+                                <td>{{ $user->name }}</td>
                                 <td class="text-center align-middle">
                                     <div class="btn-group">
                                         <a href="{{ route('users.show', $user->id) }}" class="btn btn-info"
