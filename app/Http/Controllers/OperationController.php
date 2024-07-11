@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Operation;
 use App\Models\Consumer;
+use App\Models\LogFile;
 use App\Models\MovementRecord;
 use App\Models\SubConsumer;
 use Carbon\Carbon;
 use Hamcrest\Type\IsInteger;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Validation\Rule;
 use Ramsey\Uuid\Type\Integer;
@@ -241,7 +243,7 @@ class OperationController extends Controller
             'amount' => ['required', 'numeric'],
             'date' => 'required',
             'foulType' => 'required',
-            'receiverName' => 'required',
+            'receiverName' => 'required|max:35',
             'dischangeNumber' => ['required', 'unique:operations', 'regex:/^\d{4}$/']
         ], [
             'sub_consumer_name' => 'أدخل اسم المستهلك',
@@ -249,11 +251,13 @@ class OperationController extends Controller
             'amount.numeric' => 'يجب أن تكون كمية الوقود رقماً',
             'date' => 'أدخل التاريخ',
             'foulType' => 'أدخل نوع الوقود',
-            'receiverName' => 'أدخل اسم المستلم',
+            'receiverName.required' => 'أدخل اسم المستلم',
+            'receiverName.max' => 'يجب ألا يزيد اسم المستلم عن 35 حرف',
             'dischangeNumber.required' => 'أدخل رقم سند الصرف',
             'dischangeNumber.unique' => 'هذا السند موجود مسبقاً',
             'dischangeNumber.regex' => 'يجب أن يتكون سند الصرف من 4 أرقام',
         ]);
+
         if (+$request->amount > Operation::getExistOF($request->foulType)) {
             $request->validate(['amount' => function ($attribute, $value, $fail) {
                 return $fail('لا يوجد ما يكفي من الوقود لصرف هذه الكمية');
@@ -273,15 +277,43 @@ class OperationController extends Controller
         $operation->receiverName = $request->input('receiverName');
         $operation->foulType = $request->input('foulType');
         $operation->description = $request->input('description');
-        $isSaved = $operation->save();
         if ($record) {
+            $last = SubConsumer::find($request->input('sub_consumer_name'))->movementRecords()->orderByDesc('date')->orderByDesc('created_at')->first()->record ??  '0';
+            $request->validate([
+                'record' => ['numeric', function ($attribute, $value, $fail) use ($last) {
+                    if ($value <= $last) {
+                        $fail('يجب أن تكون قراءة العدّاد أكبر من القراءة السابقة');
+                    }
+                }]
+            ], [
+                'record.numeric' => 'يجب أن تكون قراءة العدّاد رقماً',
+            ]);
             $movementRecord = new MovementRecord();
             $movementRecord->sub_consumer_id =  $request->input('sub_consumer_name');
             $movementRecord->record = $request->input('record');
             $movementRecord->date = $request->input('date');
             $isSaved2 = $movementRecord->save();
+            if ($isSaved2) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\MovementRecord';
+                $logFile->object_id = $movementRecord->id;
+                $logFile->action = 'adding';
+                $logFile->old_content = null;
+                $logFile->save();
+            }
         }
-        session()->flash('messege', $isSaved ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة');
+        $isSaved = $operation->save();
+        if ($isSaved) {
+            $logFile = new LogFile();
+            $logFile->user_id = Auth::user()->id;
+            $logFile->object_type = 'App\Models\Operation';
+            $logFile->object_id = $operation->id;
+            $logFile->action = 'adding';
+            $logFile->old_content = null;
+            $logFile->save();
+        }
+        session()->flash('messege', $isSaved && $isSaved2 ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة');
         return redirect()->route('operations.index');
     }
 
@@ -309,6 +341,15 @@ class OperationController extends Controller
         $operation->foulType = $request->input('foulType');
         $operation->description = $request->input('description');
         $isSaved = $operation->save();
+        if ($isSaved) {
+            $logFile = new LogFile();
+            $logFile->user_id = Auth::user()->id;
+            $logFile->object_type = 'App\Models\Operation';
+            $logFile->object_id = $operation->id;
+            $logFile->action = 'adding';
+            $logFile->old_content = null;
+            $logFile->save();
+        }
         session()->flash('messege', $isSaved ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة');
         return redirect()->route('operations.index');
     }
@@ -346,11 +387,15 @@ class OperationController extends Controller
     {
         $consumers = Consumer::all();
         $subConsumers = SubConsumer::all();
+        $subConsumer = $operation->subConsumer;
+        $consumer = $subConsumer->consumer;
         // dd($operation);
         return response()->view('operations.edit-outcome', [
             'consumers' => $consumers,
             'subConsumers' => $subConsumers,
             'operation' => $operation,
+            'consumer' => $consumer,
+            'subConsumer' => $subConsumer,
             'page' => $page
         ]);
     }
@@ -366,7 +411,7 @@ class OperationController extends Controller
             'amount' => ['required', 'numeric'],
             'date' => 'required',
             'foulType' => 'required',
-            'receiverName' => 'required',
+            'receiverName' => 'required|max:35',
             'dischangeNumber' => ['required', 'regex:/^\d{4}$/']
         ], [
             'sub_consumer_name' => 'أدخل اسم المستهلك',
@@ -374,12 +419,15 @@ class OperationController extends Controller
             'amount.numeric' => 'يجب أن تكون كمية الوقود رقماً',
             'date' => 'أدخل التاريخ',
             'foulType' => 'أدخل نوع الوقود',
-            'receiverName' => 'أدخل اسم المستلم',
+            'receiverName.required' => 'أدخل اسم المستلم',
+            'receiverName.max' => 'يجب ألا يزيد اسم المستلم عن 35 حرف',
             'dischangeNumber.required' => 'أدخل رقم سند الصرف',
             'dischangeNumber.regex' => 'يجب أن يتكون سند الصرف من 4 أرقام',
 
         ]);
         // dd($page);
+        $old = $operation->replicate();
+
         $page = $request->page;
         $operation->sub_consumer_id = $request->input('sub_consumer_name');
         $operation->amount = $request->input('amount');
@@ -394,6 +442,15 @@ class OperationController extends Controller
         $operation->foulType = $request->input('foulType');
         $operation->description = $request->input('description');
         $isUpdated = $operation->save();
+        if ($isUpdated) {
+            $logFile = new LogFile();
+            $logFile->user_id = Auth::user()->id;
+            $logFile->object_type = 'App\Models\Operation';
+            $logFile->object_id = $operation->id;
+            $logFile->action = 'editting';
+            $logFile->old_content = $old;
+            $logFile->save();
+        }
         session()->flash('messege', $isUpdated ? 'تم التعديل بنجاح' : 'فشل في التعديل');
         if ($page == 'index') {
             return redirect()->route('operations.index');
@@ -422,7 +479,7 @@ class OperationController extends Controller
             'date' => 'أدخل التاريخ',
             'foulType' => 'أدخل نوع الوقود',
         ]);
-
+        $old = $operation->replicate();
         $operation->amount = $request->input('amount');
         $operation->date = $request->input('date');
         if ($request->input('checked')) {
@@ -435,6 +492,15 @@ class OperationController extends Controller
         $operation->foulType = $request->input('foulType');
         $operation->description = $request->input('description');
         $isUpdated = $operation->save();
+        if ($isUpdated) {
+            $logFile = new LogFile();
+            $logFile->user_id = Auth::user()->id;
+            $logFile->object_type = 'App\Models\Operation';
+            $logFile->object_id = $operation->id;
+            $logFile->action = 'editting';
+            $logFile->old_content = $old;
+            $logFile->save();
+        }
         session()->flash('messege', $isUpdated ? 'تم التعديل بنجاح' : 'فشل في التعديل');
         if ($page == 'index') {
             return redirect()->route('operations.index');
@@ -462,7 +528,17 @@ class OperationController extends Controller
      */
     public function destroy(Operation $operation)
     {
+        $old = $operation;
         $isDeleted = $operation->delete();
+        if ($isDeleted) {
+            $logFile = new LogFile();
+            $logFile->user_id = Auth::user()->id;
+            $logFile->object_type = 'App\Models\Operation';
+            $logFile->object_id = $old->id;
+            $logFile->action = 'deleting';
+            $logFile->old_content = $old;
+            $logFile->save();
+        }
         return response()->json([
             'icon' => $isDeleted ? 'success' : 'error',
             'message' => $isDeleted ? 'تم حذف العملية ' : 'فشل حذف العملية '

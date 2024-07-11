@@ -37,7 +37,7 @@
                                 <select class="form-control select2 select2-hidden-accessible consumer_name"
                                     id="consumer_name" name="consumer_name" style="width: 100%;" data-select2-id="1"
                                     tabindex="-1" aria-hidden="true">
-                                    <option value="">اختر المستهلك الرئيسي</option>
+                                    <option value="{{ $consumer->id }}">{{ $consumer->name }}</option>
                                     {{ $consumer_id = App\Models\SubConsumer::withTrashed()->findOrFail($operation->sub_consumer_id)->consumer_id }}
                                     {{-- {{ dd(App\Models\Consumer::findOrFail($consumer_id)->subConsumers) }} --}}
                                     @foreach ($consumers as $cons)
@@ -48,14 +48,13 @@
                                 </select>
                             </div>
                         </div>
-
                         <div class="col-sm-4">
                             <div class="form-group" data-select2-id="13">
                                 <label>المستهلك</label>
                                 <select class="form-control select2 select2-hidden-accessible" id="sub_consumer_name"
                                     name="sub_consumer_name" style="width: 100%;" data-select2-id="1" tabindex="-1"
                                     aria-hidden="true">
-                                    <option value="">اختر المستهلك الفرعي</option>
+                                    <option value="{{ $subConsumer->id }}">{{ $subConsumer->details }}</option>
                                     @foreach (App\Models\Consumer::withTrashed()->findOrFail($consumer_id)->subConsumers as $subConsumer)
                                         <option value="{{ $subConsumer->id }}"
                                             @if ($subConsumer->id == $operation->sub_consumer_id) selected @endif>{{ $subConsumer->details }}

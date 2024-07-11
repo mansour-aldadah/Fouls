@@ -19,9 +19,17 @@ class Consumer extends Model
     {
         return $this->hasMany(SubConsumer::class, 'consumer_id', 'id');
     }
+    public function userConsumers()
+    {
+        return $this->hasMany(UserConsumer::class, 'user_consumers_id', 'id');
+    }
 
     public function operations()
     {
         return $this->hasManyThrough(Operation::class, SubConsumer::class, 'consumer_id', 'sub_consumer_id');
+    }
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_consumers');
     }
 }

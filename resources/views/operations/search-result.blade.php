@@ -42,7 +42,7 @@
                     <tbody>
                         @foreach ($operations as $operation)
                             <div class="d-none">
-                                {{ $va = App\Models\SubConsumer::where('id', $operation->sub_consumer_id)->first() }}
+                                {{ $va = App\Models\SubConsumer::where('id', $operation->sub_consumer_id)->withTrashed()->first() }}
                             </div>
                             <tr>
                                 <td>
@@ -52,7 +52,8 @@
                                     <td>
                                         {{ $va->details }}
                                     </td>
-                                    <td>{{ App\Models\Consumer::where('id', $va->consumer_id)->first()->name }}</td>
+                                    <td>{{ App\Models\Consumer::where('id', $va->consumer_id)->withTrashed()->first()->name }}
+                                    </td>
                                     <td>{{ $operation->receiverName }}</td>
                                     <td style=" text-align: center">{{ $operation->type }}</td>
                                     <td

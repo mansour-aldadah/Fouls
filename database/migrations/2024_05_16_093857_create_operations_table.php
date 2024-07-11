@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('dischangeNumber', 4)->unique()->nullable();
             $table->date('date')->default(now());
             $table->boolean('checked')->default(false);
-            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -11,11 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('travels', function (Blueprint $table) {
+        Schema::create('travel', function (Blueprint $table) {
             $table->id();
             $table->foreignid('sub_consumer_id')->constrained()->restrictOnDelete();
             $table->string('road');
             $table->string('cause');
+            $table->date('date');
+            $table->enum('status', ['منشأة', 'قيد التنفيذ', 'منتهية', 'ملغية'])->default('منشأة');
+            $table->string('recordBefore')->nullable();
+            $table->string('recordAfter')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('travels');
+        Schema::dropIfExists('travel');
     }
 };

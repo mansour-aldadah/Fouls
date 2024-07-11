@@ -17,14 +17,14 @@ class OperationFactory extends Factory
     public function definition(): array
     {
         return [
-            'receiverName' => null,
-            'dischangeNumber' => null,
+            'receiverName' => 'Masnour',
+            'dischangeNumber' => $this->faker->numberBetween(1000 , 9999),
             'date' => $this->faker->date(),
-            'description' => $this->faker->sentence(),
+            'description' => 'سيارات الإسعاف سيارات سيارات الإسعاف سيارات الإسعاف',
             'amount' => $this->faker->randomFloat(2, 0, 100),
-            'type' => 'وارد',
+            'type' => 'صرف',
             'foulType' => 'سولار',
-            'sub_consumer_id' => null,
+            'sub_consumer_id' => 1,
         ];
     }
 }

@@ -28,17 +28,35 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="road">طريق الرحلة</label>
+                        <label for="road">وجهة الرحلة</label>
                         <input type="text" class="form-control" id="road" name="road"
                             value="@if (old('road')) {{ old('road') }} @endif"
-                            placeholder="أدخل طريق الرحلة">
+                            placeholder="أدخل وجهة الرحلة">
                     </div>
                     <div class="form-group">
-                        <label for="cause">هدف الرحلة</label>
+                        <label for="cause">سبب الرحلة</label>
                         <input type="text" class="form-control" id="cause" name="cause"
                             value="@if (old('cause')) {{ old('cause') }} @endif"
-                            placeholder="أدخل هدف الرحلة">
+                            placeholder="أدخل سبب الرحلة">
                     </div>
+                    <div class="form-group">
+                        <label for="date">تاريخ الرحلة</label>
+                        <input type="date" class="form-control" id="date" name="date"
+                            @if (old('date')) value="{{ \Carbon\Carbon::parse(old('date'))->format('Y-m-d') }}" @else value="{{ \Carbon\Carbon::parse(now())->format('Y-m-d') }}" @endif
+                            placeholder="أدخل تاريخ الرحلة">
+                    </div>
+                    {{-- <div class="form-group">
+                        <label for="recordBefore">قراءة العدّاد قبل الرحلة </label>
+                        <input type="text" class="form-control" id="recordBefore" name="recordBefore"
+                            value="@if (old('recordBefore')) {{ old('recordBefore') }} @endif"
+                            placeholder="أدخل قراءة العدّاد قبل الرحلة">
+                    </div>
+                    <div class="form-group">
+                        <label for="recordAfter">قراءة العدّاد بعد الرحلة</label>
+                        <input type="text" class="form-control" id="recordAfter" name="recordAfter"
+                            value="@if (old('recordAfter')) {{ old('recordAfter') }} @endif"
+                            placeholder="أدخل قراءة العدّاد بعد الرحلة">
+                    </div> --}}
                     <!-- /.card-body -->
                 </div>
                 <div class="card-footer">
@@ -46,7 +64,7 @@
                 </div>
             </form>
         </div>
-    </div>
+    </div>      
 @endsection
 
 @section('script')
@@ -56,7 +74,10 @@
             axios.post('/travels', {
                     sub_consumer_id: document.getElementById('sub_consumer_name').value,
                     road: document.getElementById('road').value,
-                    cause: document.getElementById('cause').value
+                    cause: document.getElementById('cause').value,
+                    // recordBefore: document.getElementById('recordBefore').value,
+                    // recordAfter: document.getElementById('recordAfter').value,
+                    date: document.getElementById('date').value
                 })
                 .then(function(response) {
                     document.getElementById('form').reset();

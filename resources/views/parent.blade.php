@@ -55,6 +55,11 @@
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="{{ route('dashboard') }}" class="nav-link">الرئيسية</a>
                 </li>
+                @if (Illuminate\Support\Facades\Auth::user()->role == 'مدير')
+                    <li class="nav-item d-none d-sm-inline-block">
+                        <a href="{{ route('log_files.index') }}" class="nav-link">سجل العمليات</a>
+                    </li>
+                @endif
             </ul>
             <ul class="navbar-nav mr-auto-navbav">
                 <!-- Notifications Dropdown Menu -->
@@ -192,12 +197,148 @@
                         </ul>
                     </nav>
                 @endif
-                @if (Illuminate\Support\Facades\Auth::user()->role != 'مستخدم')
+
+                @if (Illuminate\Support\Facades\Auth::user()->role == 'مدير' ||
+                        Illuminate\Support\Facades\Auth::user()->role == 'مستخدم')
                     <nav class="mt-2">
                         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                             data-accordion="false">
                             <!-- Add icons to the links using the .nav-icon class
-                    with font-awesome or any other icon font library -->
+                            with font-awesome or any other icon font library -->
+                            <li class="nav-item has-treeview menu-open">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-users "></i>
+                                    <p>
+                                        المستهلكين الرئيسيين
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    @if (App\Models\Consumer::first())
+                                        <li class="nav-item">
+                                            <a href="{{ route('consumers.index') }}" class="nav-link">
+                                                <i class="far fa-eye nav-icon ml-3 mr-0"></i>
+                                                <p>عرض</p>
+                                            </a>
+                                        </li>
+                                    @endif
+                                    <li class="nav-item">
+                                        <a href="{{ route('consumers.create') }}" class="nav-link">
+                                            <i class="fas fa-user-plus nav-icon ml-3 mr-0"></i>
+                                            <p>إضافة</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                    @if (App\Models\Consumer::first() || App\Models\SubConsumer::first())
+                        <nav class="mt-2">
+                            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                                data-accordion="false">
+                                <!-- Add icons to the links using the .nav-icon class
+                            with font-awesome or any other icon font library -->
+                                <li class="nav-item has-treeview menu-open">
+                                    <a href="#" class="nav-link">
+                                        <i class="nav-icon fas fa-users "></i>
+                                        <p>
+                                            المستهلكين الفرعيين
+                                            <i class="right fas fa-angle-left"></i>
+                                        </p>
+                                    </a>
+                                    <ul class="nav nav-treeview">
+                                        @if (App\Models\SubConsumer::first())
+                                            <li class="nav-item">
+                                                <a href="{{ route('sub_consumers.index') }}" class="nav-link">
+                                                    <i class="far fa-eye nav-icon ml-3 mr-0"></i>
+                                                    <p>عرض</p>
+                                                </a>
+                                            </li>
+                                        @endif
+
+                                        @if (App\Models\Consumer::first())
+                                            <li class="nav-item">
+                                                <a href="{{ route('sub_consumers.create', App\Models\Consumer::first()) }}"
+                                                    class="nav-link">
+                                                    <i class="fas fa-user-plus nav-icon ml-3 mr-0"></i>
+                                                    <p>إضافة</p>
+                                                </a>
+                                            </li>
+                                        @endif
+
+                                    </ul>
+                                </li>
+                            </ul>
+                        </nav>
+                    @endif
+
+                    <nav class="mt-2">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                            data-accordion="false">
+                            <!-- Add icons to the links using the .nav-icon class
+                            with font-awesome or any other icon font library -->
+                            <li class="nav-item has-treeview menu-open">
+                                <a href="#" class="nav-link">
+                                    <i class="fas fa-cog nav-icon"></i>
+                                    <p>
+                                        العمليات
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview" style="display: block;">
+                                    @if (App\Models\Operation::first())
+                                        <li class="nav-item">
+                                            <a href="{{ route('operations.index') }}" class="nav-link">
+                                                <i class="far fa-eye nav-icon ml-3 mr-0"></i>
+                                                <p>عرض</p>
+                                            </a>
+                                        </li>
+                                    @endif
+                                    <li class="nav-item">
+                                        <a href="#" class="nav-link">
+                                            <i class="far fa-plus-square nav-icon ml-3 mr-0"></i>
+                                            <p>
+                                                إضافة
+                                                <i class="right fas fa-angle-left"></i>
+                                            </p>
+                                        </a>
+                                        <ul class="nav nav-treeview" style="display: none;">
+                                            @if (App\Models\Operation::first())
+                                                <li class="nav-item">
+                                                    <a href="{{ route('operations.create-outcome') }}"
+                                                        class="nav-link">
+                                                        <i class="fas fa-arrow-up nav-icon ml-5 mr-0"></i>
+                                                        <p>صرف</p>
+                                                    </a>
+                                                </li>
+                                            @endif
+                                            <li class="nav-item">
+                                                <a href="{{ route('operations.create-income') }}" class="nav-link">
+                                                    <i class="fas fa-arrow-down nav-icon ml-5 mr-0"></i>
+                                                    <p>وارد</p>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    @if (App\Models\Operation::first())
+                                        <li class="nav-item">
+                                            <a href="{{ route('operations.search') }}" class="nav-link">
+                                                <i class="fas fa-search nav-icon ml-3 mr-0"></i>
+                                                <p>بحث</p>
+                                            </a>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                @endif
+                @if (Illuminate\Support\Facades\Auth::user()->role == 'مستهلك' || App\Models\Travel::first())
+                    <nav class="mt-2">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                            data-accordion="false">
+                            <!-- Add icons to the links using the .nav-icon class
+                with font-awesome or any other icon font library -->
                             <li class="nav-item has-treeview menu-open">
                                 <a href="#" class="nav-link">
                                     <i class="nav-icon far fa-flag"></i>
@@ -215,151 +356,19 @@
                                             </a>
                                         </li>
                                     @endif
-                                    <li class="nav-item">
-                                        <a href="{{ route('travels.create') }}" class="nav-link">
-                                            <i class="far fa-plus-square nav-icon ml-3 mr-0"></i>
-                                            <p>إضافة</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </nav>
-                @endif
-
-
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
-                        data-accordion="false">
-                        <!-- Add icons to the links using the .nav-icon class
-                            with font-awesome or any other icon font library -->
-                        <li class="nav-item has-treeview menu-open">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-users "></i>
-                                <p>
-                                    المستهلكين الرئيسيين
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                @if (App\Models\Consumer::first())
-                                    <li class="nav-item">
-                                        <a href="{{ route('consumers.index') }}" class="nav-link">
-                                            <i class="far fa-eye nav-icon ml-3 mr-0"></i>
-                                            <p>عرض</p>
-                                        </a>
-                                    </li>
-                                @endif
-                                <li class="nav-item">
-                                    <a href="{{ route('consumers.create') }}" class="nav-link">
-                                        <i class="fas fa-user-plus nav-icon ml-3 mr-0"></i>
-                                        <p>إضافة</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </nav>
-                @if (App\Models\Consumer::first() || App\Models\SubConsumer::first())
-                    <nav class="mt-2">
-                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
-                            data-accordion="false">
-                            <!-- Add icons to the links using the .nav-icon class
-                            with font-awesome or any other icon font library -->
-                            <li class="nav-item has-treeview menu-open">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-users "></i>
-                                    <p>
-                                        المستهلكين الفرعيين
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    @if (App\Models\SubConsumer::first())
+                                    @if (Illuminate\Support\Facades\Auth::user()->role == 'مستهلك')
                                         <li class="nav-item">
-                                            <a href="{{ route('sub_consumers.index') }}" class="nav-link">
-                                                <i class="far fa-eye nav-icon ml-3 mr-0"></i>
-                                                <p>عرض</p>
-                                            </a>
-                                        </li>
-                                    @endif
-
-                                    @if (App\Models\Consumer::first())
-                                        <li class="nav-item">
-                                            <a href="{{ route('sub_consumers.create', App\Models\Consumer::first()) }}"
-                                                class="nav-link">
-                                                <i class="fas fa-user-plus nav-icon ml-3 mr-0"></i>
+                                            <a href="{{ route('travels.create') }}" class="nav-link">
+                                                <i class="far fa-plus-square nav-icon ml-3 mr-0"></i>
                                                 <p>إضافة</p>
                                             </a>
                                         </li>
                                     @endif
-
                                 </ul>
                             </li>
                         </ul>
                     </nav>
                 @endif
-
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
-                        data-accordion="false">
-                        <!-- Add icons to the links using the .nav-icon class
-                            with font-awesome or any other icon font library -->
-                        <li class="nav-item has-treeview menu-open">
-                            <a href="#" class="nav-link">
-                                <i class="fas fa-cog nav-icon"></i>
-                                <p>
-                                    العمليات
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview" style="display: block;">
-                                @if (App\Models\Operation::first())
-                                    <li class="nav-item">
-                                        <a href="{{ route('operations.index') }}" class="nav-link">
-                                            <i class="far fa-eye nav-icon ml-3 mr-0"></i>
-                                            <p>عرض</p>
-                                        </a>
-                                    </li>
-                                @endif
-                                <li class="nav-item">
-                                    <a href="#" class="nav-link">
-                                        <i class="far fa-plus-square nav-icon ml-3 mr-0"></i>
-                                        <p>
-                                            إضافة
-                                            <i class="right fas fa-angle-left"></i>
-                                        </p>
-                                    </a>
-                                    <ul class="nav nav-treeview" style="display: none;">
-                                        @if (App\Models\Operation::first())
-                                            <li class="nav-item">
-                                                <a href="{{ route('operations.create-outcome') }}" class="nav-link">
-                                                    <i class="fas fa-arrow-up nav-icon ml-5 mr-0"></i>
-                                                    <p>صرف</p>
-                                                </a>
-                                            </li>
-                                        @endif
-
-                                        <li class="nav-item">
-                                            <a href="{{ route('operations.create-income') }}" class="nav-link">
-                                                <i class="fas fa-arrow-down nav-icon ml-5 mr-0"></i>
-                                                <p>وارد</p>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                @if (App\Models\Operation::first())
-                                    <li class="nav-item">
-                                        <a href="{{ route('operations.search') }}" class="nav-link">
-                                            <i class="fas fa-search nav-icon ml-3 mr-0"></i>
-                                            <p>بحث</p>
-                                        </a>
-                                    </li>
-                                @endif
-                            </ul>
-                        </li>
-                    </ul>
-                </nav>
                 <!-- /.sidebar-menu -->
             </div>
             <!-- /.sidebar -->
@@ -396,7 +405,7 @@
             <strong> Copyright &copy; 2024</strong>
 
             <div class="float-right d-none d-sm-inline-block">
-                <b>Version</b> 1.0
+                <b>Version</b> 2.0
             </div>
         </footer>
     </div>

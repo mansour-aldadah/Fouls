@@ -40,10 +40,10 @@
                         <div class="col-12 col-sm-4">
                             <div class="info-box bg-light">
                                 <div class="info-box-content">
-                                    <span class="info-box-text text-center text-muted">قراءة العدّاد السابقة</span>
+                                    <span class="info-box-text text-center text-muted">قراءة العدّاد الأخيرة</span>
                                     <span class="info-box-number text-center text-muted mb-0">
-                                        @if ($subConsumer->movementRecord)
-                                            {{ number_format(+$subConsumer->movementRecord()->orderByDesc('date')->orderByDesc('created_at')->first()->record) }}
+                                        @if ($subConsumer->movementRecords()->first())
+                                            {{ number_format(+$subConsumer->movementRecords()->orderByDesc('date')->orderByDesc('created_at')->first()->record) }}
                                         @else
                                             لا يوجد
                                         @endif
@@ -67,7 +67,7 @@
                             <div class="form-group">
                                 <label for="date">التاريخ</label>
                                 <input type="date" class="form-control" id="date" name="date"
-                                    @if (old('date')) value="{{ \Carbon\Carbon::parse(old('date'))->format('Y-m-d') }}" @else value="{{ \Carbon\Carbon::parse(now())->format('Y-m-d') }}" @endif
+                                    @if (old('date')) value="{{ \Carbon\Carbon::parse(old('date'))->format('Y-m-d') }}" @else value="{{ $movementRecord->date }}" @endif
                                     placeholder="أدخل التاريخ">
                             </div>
                         </div>

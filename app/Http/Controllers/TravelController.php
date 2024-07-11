@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LogFile;
+use App\Models\MovementRecord;
 use App\Models\SubConsumer;
 use App\Models\Travel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class TravelController extends Controller
@@ -15,7 +18,7 @@ class TravelController extends Controller
     public function index()
     {
         $subConsumers = SubConsumer::all();
-        $travels = Travel::all();
+        $travels = Travel::orderByRaw("FIELD(status, 'قيد التنفيذ') DESC")->orderByDesc('date')->get();
         return view('travels.index', ['subConsumers' => $subConsumers, 'travels' => $travels]);
     }
 
@@ -39,11 +42,19 @@ class TravelController extends Controller
                 'sub_consumer_id' => 'required',
                 'road' => 'required',
                 'cause' => 'required',
+                // 'recordBefore' => 'required|numeric',
+                // 'recordAfter' => 'required|numeric',
+                'date' => 'required|date',
             ],
             [
                 'sub_consumer_id.required' => 'أدخل اسم المستهلك',
                 'road.required' => 'أدخل طريق الرحلة',
                 'cause.required' => 'أدخل هدف الرحلة',
+                'date.required' => 'أدخل تاريخ الرحلة',
+                // 'recordBefore.required' => 'أدخل قراءة العدّاد قبل الرحلة',
+                // 'recordAfter.required' => 'أدخل قراءة العدّاد بعد الرحلة',
+                // 'recordBefore.numeric' => 'يجب أن تكون قراءة العدّاد رقماً',
+                // 'recordAfter.numeric' => 'يجب أن تكون قراءة العدّاد رقماً',
             ]
         );
         if (!$validator->fails()) {
@@ -51,7 +62,20 @@ class TravelController extends Controller
             $travel->sub_consumer_id = $request->input('sub_consumer_id');
             $travel->road = $request->input('road');
             $travel->cause = $request->input('cause');
+            $travel->date = $request->input('date');
+            $travel->status = 'منشأة';
+            // $travel->recordBefore = $request->input('recordBefore');
+            // $travel->recordAfter = $request->input('recordAfter');
             $isSaved = $travel->save();
+            if ($isSaved) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\Travel';
+                $logFile->object_id = $travel->id;
+                $logFile->action = 'adding';
+                $logFile->old_content = null;
+                $logFile->save();
+            }
             return response()->json([
                 'icon' => 'success',
                 'message' => $isSaved ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة'
@@ -92,22 +116,43 @@ class TravelController extends Controller
                 'sub_consumer_id' => 'required',
                 'road' => 'required',
                 'cause' => 'required',
+                // 'recordBefore' => 'required|numeric',
+                // 'recordAfter' => 'required|numeric',
+                'date' => 'required|date',
             ],
             [
                 'sub_consumer_id.required' => 'أدخل اسم المستهلك',
                 'road.required' => 'أدخل طريق الرحلة',
                 'cause.required' => 'أدخل هدف الرحلة',
+                'date.required' => 'أدخل تاريخ الرحلة',
+                // 'recordBefore.required' => 'أدخل قراءة العدّاد قبل الرحلة',
+                // 'recordAfter.required' => 'أدخل قراءة العدّاد بعد الرحلة',
+                // 'recordBefore.numeric' => 'يجب أن تكون قراءة العدّاد رقماً',
+                // 'recordAfter.numeric' => 'يجب أن تكون قراءة العدّاد رقماً',
             ]
         );
         if (!$validator->fails()) {
+            $old = $travel->replicate();
             $travel->sub_consumer_id = $request->input('sub_consumer_id');
             $travel->road = $request->input('road');
             $travel->cause = $request->input('cause');
-            $isSaved = $travel->save();
+            $travel->date = $request->input('date');
+            // $travel->recordBefore = $request->input('recordBefore');
+            // $travel->recordAfter = $request->input('recordAfter');
+            $isUpdated = $travel->save();
+            if ($isUpdated) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\Travel';
+                $logFile->object_id = $travel->id;
+                $logFile->action = 'editting';
+                $logFile->old_content = $old;
+                $logFile->save();
+            }
             return response()->json([
                 'icon' => 'success',
-                'message' => $isSaved ? 'تم التعديل بنجاح' : 'فشل في التعديل'
-            ], $isSaved ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
+                'message' => $isUpdated ? 'تم التعديل بنجاح' : 'فشل في التعديل'
+            ], $isUpdated ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
         } else {
             return response()->json([
                 'icon' => 'warning',
@@ -116,12 +161,142 @@ class TravelController extends Controller
         }
     }
 
+    public function updateStatus(Travel $travel, Request $request)
+    {
+        $old = $travel->replicate();
+        $reading = $request->input('reading');
+        $movementRecord = new MovementRecord();
+        $movementRecord->date = $travel->date;
+        $movementRecord->sub_consumer_id = $travel->sub_consumer_id;
+        $movementRecord->record = $reading;
+        if ($travel->status == 'منشأة') {
+            $last = SubConsumer::find($travel->sub_consumer_id)->movementRecords()->orderByDesc('date')->orderByDesc('created_at')->first()->record ??  '0';
+            $validator = Validator($request->all(), [
+                'reading' => ['required', 'numeric', function ($attribute, $value, $fail) use ($last) {
+                    if ($value <= $last) {
+                        $fail('يجب أن تكون قراءة العدّاد أكبر من القراءة السابقة');
+                    }
+                }]
+            ], [
+                'reading.required' => 'أدخل قراءة العدّاد',
+                'reading.numeric' => 'يجب أن تكون قراءة العدّاد رقماً',
+            ]);
+            if (!$validator->fails()) {
+                $isSaved = $movementRecord->save();
+                if ($isSaved) {
+                    $logFile = new LogFile();
+                    $logFile->user_id = Auth::user()->id;
+                    $logFile->object_type = 'App\Models\MovementRecord';
+                    $logFile->object_id = $movementRecord->id;
+                    $logFile->action = 'adding';
+                    $logFile->old_content = null;
+                    $logFile->save();
+                }
+                $travel->status = 'قيد التنفيذ';
+                $travel->recordBefore = $reading;
+                $isUpdated = $travel->save();
+                if ($isUpdated) {
+                    $logFile = new LogFile();
+                    $logFile->user_id = Auth::user()->id;
+                    $logFile->object_type = 'App\Models\Travel';
+                    $logFile->object_id = $travel->id;
+                    $logFile->action = 'editting';
+                    $logFile->old_content = $old;
+                    $logFile->save();
+                }
+                return response()->json([
+                    'icon' => $isUpdated && $isSaved ? 'success' : 'error',
+                    'message' => $isUpdated && $isSaved ? 'تم بدء الرحلة ' . $travel->road : 'فشل بدء الرحلة ' . $travel->road
+                ], $isUpdated && $isSaved ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
+            } else {
+                return response()->json([
+                    'icon' => 'warning',
+                    'message' => $validator->getMessageBag()->first()
+                ], Response::HTTP_BAD_REQUEST);
+            }
+        } elseif ($travel->status == 'قيد التنفيذ') {
+            $isSaved = $movementRecord->save();
+            if ($isSaved) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\MovementRecord';
+                $logFile->object_id = $movementRecord->id;
+                $logFile->action = 'adding';
+                $logFile->old_content = null;
+                $logFile->save();
+            }
+            $last = $travel->recordBefore;
+            $validator = Validator($request->all(), [
+                'reading' => ['required', 'numeric', function ($attribute, $value, $fail) use ($last) {
+                    if ($value <= $last) {
+                        $fail('يجب أن تكون قراءة العدّاد أكبر من القراءة السابقة');
+                    }
+                }]
+            ], [
+                'reading.required' => 'أدخل قراءة العدّاد',
+                'reading.numeric' => 'يجب أن تكون قراءة العدّاد رقماً',
+            ]);
+            if (!$validator->fails()) {
+                $travel->status = 'منتهية';
+                $travel->recordAfter = $reading;
+                $isUpdated = $travel->save();
+                if ($isUpdated) {
+                    $logFile = new LogFile();
+                    $logFile->user_id = Auth::user()->id;
+                    $logFile->object_type = 'App\Models\Travel';
+                    $logFile->object_id = $travel->id;
+                    $logFile->action = 'editting';
+                    $logFile->old_content = $old;
+                    $logFile->save();
+                }
+                return response()->json([
+                    'icon' => $isUpdated && $isSaved ? 'success' : 'error',
+                    'message' => $isUpdated && $isSaved ? 'تم إنهاء الرحلة ' . $travel->road : 'فشل إنهاء الرحلة ' . $travel->road
+                ], $isUpdated && $isSaved ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
+            } else {
+                return response()->json([
+                    'icon' => 'warning',
+                    'message' => $validator->getMessageBag()->first()
+                ], Response::HTTP_BAD_REQUEST);
+            }
+        }
+    }
+
+    public function cancelTravel(Travel $travel)
+    {
+        $old = $travel->replicate();
+        $travel->status = 'ملغية';
+        $isUpdated = $travel->save();
+        if ($isUpdated) {
+            $logFile = new LogFile();
+            $logFile->user_id = Auth::user()->id;
+            $logFile->object_type = 'App\Models\Travel';
+            $logFile->object_id = $travel->id;
+            $logFile->action = 'editting';
+            $logFile->old_content = $old;
+            $logFile->save();
+        }
+        return response()->json([
+            'icon' => $isUpdated ? 'success' : 'error',
+            'message' => $isUpdated ? 'تم إلغاء الرحلة ' . $travel->road : 'فشل إلغاء الرحلة ' . $travel->road
+        ], $isUpdated ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
+    }
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Travel $travel)
     {
+        $old = $travel;
         $isDeleted = $travel->delete();
+        if ($isDeleted) {
+            $logFile = new LogFile();
+            $logFile->user_id = Auth::user()->id;
+            $logFile->object_type = 'App\Models\Travel';
+            $logFile->object_id = $old->id;
+            $logFile->action = 'deleting';
+            $logFile->old_content = $old;
+            $logFile->save();
+        }
         return response()->json([
             'icon' => $isDeleted ? 'success' : 'error',
             'message' => $isDeleted ? 'تم حذف الرحلة ' . $travel->road : 'فشل حذف الرحلة ' . $travel->road

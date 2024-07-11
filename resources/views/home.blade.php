@@ -1,314 +1,433 @@
 @extends('parent')
 
-@section('title', 'نظام إدارة المحروقات')
+@if (Illuminate\Support\Facades\Auth::user()->role != 'مستهلك')
 
-@section('header', 'نظام إدارة المحروقات')
+    @section('title', 'نظام إدارة المحروقات')
 
-@section('content')
+    @section('header', 'نظام إدارة المحروقات')
 
-    @if (session()->has('messege'))
-        <div class="alert alert-success alert-dismissible">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>
-            <h5><i class="icon fas fa-check"></i> تأكيد !</h5>
-            {{ session('messege') }}
+    @section('content')
+
+        @if (session()->has('messege'))
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>
+                <h5><i class="icon fas fa-check"></i> تأكيد !</h5>
+                {{ session('messege') }}
+            </div>
+        @endif
         </div>
-    @endif
-    </div>
-    <div class="container">
-        <div class="row">
-            <!-- ./col -->
-            <div class="col-lg-3 col-6">
-                <!-- small box -->
-                <div class="small-box bg-danger">
-                    <div class="inner">
-                        <h3 class="d-inline-block ml-2">
-                            {{ number_format(App\Models\SubConsumer::numberOfSubConsumers()) }}
-                            <h5 class="d-inline-block">
-                                (مستهلك)</h5>
-                        </h3>
-                        <p>عدد المستهلكين</p>
+        <div class="container">
+            <div class="row">
+                <!-- ./col -->
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3 class="d-inline-block ml-2">
+                                {{ number_format(App\Models\SubConsumer::numberOfSubConsumers()) }}
+                                <h5 class="d-inline-block">
+                                    (مستهلك)</h5>
+                            </h3>
+                            <p>عدد المستهلكين</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <a href="{{ route('sub_consumers.index') }}" class="small-box-footer"> <span
+                                class="pb-1 d-inline-block">عرض المزيد</span><i
+                                class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
                     </div>
-                    <div class="icon">
-                        <i class="fas fa-users"></i>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getIncomes(), 2) }} <h5
+                                    class="d-inline-block">
+                                    (لتر)</h5>
+                            </h3>
+                            <p>إجمالي الوارد</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <a href="{{ route('operations.index-income', ['time' => 'all']) }}" class="small-box-footer"> <span
+                                class="pb-1 d-inline-block">عرض المزيد</span><i
+                                class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
                     </div>
-                    <a href="{{ route('sub_consumers.index') }}" class="small-box-footer"> <span
-                            class="pb-1 d-inline-block">عرض المزيد</span><i
-                            class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getIncomeMonth(), 2) }}
+                                <h5 class="d-inline-block">
+                                    (لتر)</h5>
+                            </h3>
+                            <p>الوارد الشهري</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <a href="{{ route('operations.index-income', ['time' => 'month']) }}" class="small-box-footer">
+                            <span class="pb-1 d-inline-block">عرض المزيد</span><i
+                                class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
+                    </div>
+                </div>
+                <!-- ./col -->
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getTotal(), 2) }} <h5
+                                    class="d-inline-block">
+                                    (لتر)</h5>
+                            </h3>
+                            <p>إجمالي المتوفر</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-th-large"></i>
+                        </div>
+                        <a href="{{ route('operations.index') }}" class="small-box-footer"> <span
+                                class="pb-1 d-inline-block">عرض المزيد</span><i
+                                class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
+                    </div>
+                </div>
+                <!-- ./col -->
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getToday(), 2) }} <h5
+                                    class="d-inline-block">
+                                    (لتر)</h5>
+                            </h3>
+                            <p>الصرف اليومي</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <a href="{{ route('operations.index-outcome', ['time' => 'today']) }}" class="small-box-footer">
+                            <span class="pb-1 d-inline-block">عرض المزيد</span><i
+                                class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
+                    </div>
+                </div>
+                <!-- ./col -->
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getWeek(), 2) }} <h5
+                                    class="d-inline-block">
+                                    (لتر)</h5>
+                            </h3>
+                            <p>الصرف الأسبوعي</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <a href="{{ route('operations.index-outcome', ['time' => 'week']) }}" class="small-box-footer">
+                            <span class="pb-1 d-inline-block">عرض المزيد</span><i
+                                class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
+                    </div>
+                </div>
+                <!-- ./col -->
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getMonth(), 2) }} <h5
+                                    class="d-inline-block">
+                                    (لتر)</h5>
+                            </h3>
+                            <p>الصرف الشهري</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <a href="{{ route('operations.index-outcome', ['time' => 'month']) }}" class="small-box-footer">
+                            <span class="pb-1 d-inline-block">عرض المزيد</span><i
+                                class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getOutcomes(), 2) }} <h5
+                                    class="d-inline-block">
+                                    (لتر)</h5>
+                            </h3>
+                            <p>إجمالي المصروف</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <a href="{{ route('operations.index-outcome', ['time' => 'all']) }}" class="small-box-footer">
+                            <span class="pb-1 d-inline-block">عرض المزيد</span><i
+                                class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-6">
-                <!-- small box -->
-                <div class="small-box bg-success">
-                    <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getIncomes(), 2) }} <h5
-                                class="d-inline-block">
-                                (لتر)</h5>
-                        </h3>
-                        <p>إجمالي الوارد</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-arrow-down"></i>
-                    </div>
-                    <a href="{{ route('operations.index-income', ['time' => 'all']) }}" class="small-box-footer"> <span
-                            class="pb-1 d-inline-block">عرض المزيد</span><i
-                            class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <!-- small box -->
-                <div class="small-box bg-info">
-                    <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getIncomeMonth(), 2) }} <h5
-                                class="d-inline-block">
-                                (لتر)</h5>
-                        </h3>
-                        <p>الوارد الشهري</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-arrow-down"></i>
-                    </div>
-                    <a href="{{ route('operations.index-income', ['time' => 'month']) }}" class="small-box-footer"> <span
-                            class="pb-1 d-inline-block">عرض المزيد</span><i
-                            class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
-                </div>
-            </div>
-            <!-- ./col -->
-            <div class="col-lg-3 col-6">
-                <!-- small box -->
-                <div class="small-box bg-warning">
-                    <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getTotal(), 2) }} <h5
-                                class="d-inline-block">
-                                (لتر)</h5>
-                        </h3>
-                        <p>إجمالي المتوفر</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-th-large"></i>
-                    </div>
-                    <a href="{{ route('operations.index') }}" class="small-box-footer"> <span
-                            class="pb-1 d-inline-block">عرض المزيد</span><i
-                            class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
-                </div>
-            </div>
-            <!-- ./col -->
         </div>
-        <div class="row">
-            <div class="col-lg-3 col-6">
-                <!-- small box -->
-                <div class="small-box bg-info">
-                    <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getToday(), 2) }} <h5
-                                class="d-inline-block">
-                                (لتر)</h5>
-                        </h3>
-                        <p>الصرف اليومي</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-arrow-up"></i>
-                    </div>
-                    <a href="{{ route('operations.index-outcome', ['time' => 'today']) }}" class="small-box-footer"> <span
-                            class="pb-1 d-inline-block">عرض المزيد</span><i
-                            class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
-                </div>
-            </div>
-            <!-- ./col -->
-            <div class="col-lg-3 col-6">
-                <!-- small box -->
-                <div class="small-box bg-warning">
-                    <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getWeek(), 2) }} <h5
-                                class="d-inline-block">
-                                (لتر)</h5>
-                        </h3>
-                        <p>الصرف الأسبوعي</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-arrow-up"></i>
-                    </div>
-                    <a href="{{ route('operations.index-outcome', ['time' => 'week']) }}" class="small-box-footer"> <span
-                            class="pb-1 d-inline-block">عرض المزيد</span><i
-                            class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
-                </div>
-            </div>
-            <!-- ./col -->
-            <div class="col-lg-3 col-6">
-                <!-- small box -->
-                <div class="small-box bg-success">
-                    <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getMonth(), 2) }} <h5
-                                class="d-inline-block">
-                                (لتر)</h5>
-                        </h3>
-                        <p>الصرف الشهري</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-arrow-up"></i>
-                    </div>
-                    <a href="{{ route('operations.index-outcome', ['time' => 'month']) }}" class="small-box-footer"> <span
-                            class="pb-1 d-inline-block">عرض المزيد</span><i
-                            class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <!-- small box -->
-                <div class="small-box bg-danger">
-                    <div class="inner">
-                        <h3 class="d-inline-block ml-2">{{ number_format(App\Models\Operation::getOutcomes(), 2) }} <h5
-                                class="d-inline-block">
-                                (لتر)</h5>
-                        </h3>
-                        <p>إجمالي المصروف</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-arrow-up"></i>
-                    </div>
-                    <a href="{{ route('operations.index-outcome', ['time' => 'all']) }}" class="small-box-footer"> <span
-                            class="pb-1 d-inline-block">عرض المزيد</span><i
-                            class="fas fa-arrow-circle-left mr-2 pt-1"></i></a>
-                </div>
-            </div>
+        <div class="d-none">
+            {{ $page = 'home' }}
         </div>
-    </div>
-    <div class="d-none">
-        {{ $page = 'home' }}
-    </div>
-    <div class="d-none"> {{ $counter = 1 }}</div>
-    <div class="container">
-        <div class="card">
-            <div class="card-header">
-                @if ($operations->count() < 10)
-                    <h3 class="card-title float-left mt-2">آخر العمليات</h3>
-                @else
-                    <h3 class="card-title float-left mt-2">آخر 10 عمليات</h3>
-                @endif
-            </div>
-            <!-- /.card-header -->
-            <div class="card-body">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th style="width: 10px">#</th>
-                            <th>المستهلك</th>
-                            <th>المستهلك الأساسي</th>
-                            <th> اسم المستلم</th>
-                            <th style="width: 70px ; text-align: center">النوع</th>
-                            <th style="width: 110px ; text-align: center">سند الصرف</th>
-                            <th style="width: 100px ; text-align: center">نوع الوقود</th>
-                            <th style="width: 70px ; text-align: center">الكمية</th>
-                            <th style="width: 120px ; text-align: center">التاريخ</th>
-                            <th style="width: 100px ; text-align: center">الإعدادات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($operations as $operation)
-                            <div class="d-none">
-                                {{ $va = App\Models\SubConsumer::withTrashed()->where('id', $operation->sub_consumer_id)->first() }}
-                            </div>
+        <div class="d-none"> {{ $counter = 1 }}</div>
+        <div class="container">
+            <div class="card">
+                <div class="card-header">
+                    @if ($operations->count() < 10)
+                        <h3 class="card-title float-left mt-2">آخر العمليات</h3>
+                    @else
+                        <h3 class="card-title float-left mt-2">آخر 10 عمليات</h3>
+                    @endif
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
                             <tr>
-                                <td>
-                                    {{ $counter++ }}
-                                </td>
-                                @if ($va !== null)
-                                    <td>
-                                        {{ $va->details }}
-                                    </td>
-                                    <td>{{ App\Models\Consumer::withTrashed()->where('id', $va->consumer_id)->first()->name }}
-                                    </td>
-                                    <td>{{ $operation->receiverName }}</td>
-                                    <td style=" text-align: center">{{ $operation->type }}</td>
-                                    <td
-                                        style=" text-align: center; @if ($operation->checked) background-color: #ee6674 @endif">
-                                        {{ $operation->dischangeNumber }}</td>
-                                @else
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td style=" text-align: center">{{ $operation->type }}</td>
-                                    <td
-                                        style=" text-align: center; @if ($operation->checked) background-color: #ee6674 @endif">
-                                        -</td>
-                                @endif
-                                <td style=" text-align: center">{{ $operation->foulType }}</td>
-                                <td style=" text-align: center">{{ number_format($operation->amount, 2) }}</td>
-                                <td style=" text-align: center">{{ $operation->new_date }}</td>
-
-                                <td class="text-center align-middle">
-                                    <div class="btn-group">
-                                        @if ($operation->type == 'صرف')
-                                            <a href="{{ route('operations.show-outcome', $operation->id) }}"
-                                                class="btn btn-info"
-                                                style="border-top-right-radius: 10px;border-bottom-right-radius: 10px"><i
-                                                    class="fas fa-eye"></i></a>
-                                            <a href="{{ route('operations.edit-outcome', [$operation->id, $page]) }}"
-                                                class="btn btn-success"><i class="fas fa-edit"></i></a>
-                                        @else
-                                            <a href="{{ route('operations.show-income', $operation->id) }}"
-                                                class="btn btn-info"
-                                                style="border-top-right-radius: 10px;border-bottom-right-radius: 10px"><i
-                                                    class="fas fa-eye"></i></a>
-                                            <a href="{{ route('operations.edit-income', [$operation->id, $page]) }}"
-                                                class="btn btn-success"><i class="fas fa-edit"></i></a>
-                                        @endif
-
-                                        <a href="#" onclick="confirmDestroy('{{ $operation->id }}' , this)"
-                                            class="btn btn-danger"
-                                            style="border-top-left-radius: 10px;border-bottom-left-radius: 10px"><i
-                                                class="fas fa-trash"></i></a>
-                                    </div>
-                                </td>
+                                <th style="width: 10px">#</th>
+                                <th>المستهلك</th>
+                                <th>المستهلك الأساسي</th>
+                                <th> اسم المستلم</th>
+                                <th style="width: 70px ; text-align: center">النوع</th>
+                                <th style="width: 110px ; text-align: center">سند الصرف</th>
+                                <th style="width: 100px ; text-align: center">نوع الوقود</th>
+                                <th style="width: 70px ; text-align: center">الكمية</th>
+                                <th style="width: 120px ; text-align: center">التاريخ</th>
+                                <th style="width: 100px ; text-align: center">الإعدادات</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <!-- /.card-body -->
-            <div class="card-footer d-none">
+                        </thead>
+                        <tbody>
+                            @foreach ($operations as $operation)
+                                <div class="d-none">
+                                    {{ $va = App\Models\SubConsumer::withTrashed()->where('id', $operation->sub_consumer_id)->first() }}
+                                </div>
+                                <tr>
+                                    <td>
+                                        {{ $counter++ }}
+                                    </td>
+                                    @if ($va !== null)
+                                        <td>
+                                            {{ $va->details }}
+                                        </td>
+                                        <td>{{ App\Models\Consumer::withTrashed()->where('id', $va->consumer_id)->first()->name }}
+                                        </td>
+                                        <td>{{ $operation->receiverName }}</td>
+                                        <td style=" text-align: center">{{ $operation->type }}</td>
+                                        <td
+                                            style=" text-align: center; @if ($operation->checked) background-color: #ee6674 @endif">
+                                            {{ $operation->dischangeNumber }}</td>
+                                    @else
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td style=" text-align: center">{{ $operation->type }}</td>
+                                        <td
+                                            style=" text-align: center; @if ($operation->checked) background-color: #ee6674 @endif">
+                                            -</td>
+                                    @endif
+                                    <td style=" text-align: center">{{ $operation->foulType }}</td>
+                                    <td style=" text-align: center">{{ number_format($operation->amount, 2) }}</td>
+                                    <td style=" text-align: center">{{ $operation->new_date }}</td>
+
+                                    <td class="text-center align-middle">
+                                        <div class="btn-group">
+                                            @if ($operation->type == 'صرف')
+                                                <a href="{{ route('operations.show-outcome', $operation->id) }}"
+                                                    class="btn btn-info"
+                                                    style="border-top-right-radius: 10px;border-bottom-right-radius: 10px"><i
+                                                        class="fas fa-eye"></i></a>
+                                                <a href="{{ route('operations.edit-outcome', [$operation->id, $page]) }}"
+                                                    class="btn btn-success"><i class="fas fa-edit"></i></a>
+                                            @else
+                                                <a href="{{ route('operations.show-income', $operation->id) }}"
+                                                    class="btn btn-info"
+                                                    style="border-top-right-radius: 10px;border-bottom-right-radius: 10px"><i
+                                                        class="fas fa-eye"></i></a>
+                                                <a href="{{ route('operations.edit-income', [$operation->id, $page]) }}"
+                                                    class="btn btn-success"><i class="fas fa-edit"></i></a>
+                                            @endif
+
+                                            <a href="#" onclick="confirmDestroy('{{ $operation->id }}' , this)"
+                                                class="btn btn-danger"
+                                                style="border-top-left-radius: 10px;border-bottom-left-radius: 10px"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.card-body -->
+                <div class="card-footer d-none">
+                </div>
             </div>
         </div>
+    @endsection
+
+
+    @section('script')
+        <script>
+            function confirmDestroy(id, ref) {
+                Swal.fire({
+                    title: 'هل أنت متأكد؟',
+                    text: "سيتم حذف العملية",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'لا',
+                    confirmButtonText: 'نعم',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        destroy(id, ref);
+                    }
+                });
+            }
+
+            function destroy(id, ref) {
+                axios.delete('/operations/' + id)
+                    .then(function(response) {
+                        ref.closest('tr').remove();
+                        showMessage(response.data)
+                    })
+                    .catch(function(error) {
+                        showMessage(error.response.data)
+                    })
+            }
+
+            function showMessage(data) {
+                Swal.fire({
+                    toast: true,
+                    icon: data.icon,
+                    title: data.message,
+                    showConfirmButton: false,
+                    position: 'top-start',
+                    timer: 3000
+                });
+            }
+        </script>
+    @endsection
+@else
+    <div class="d-none">
+        {{ $travelsCount = App\Models\Travel::count() }}
     </div>
-@endsection
+    @section('title', 'الرحلات')
+    @if ($travelsCount >= 10)
+        @section('header', 'آخر 10 رحلات')
+    @else
+        @section('header', 'آخر الرحلات')
+    @endif
 
 
-@section('script')
-    <script>
-        function confirmDestroy(id, ref) {
-            Swal.fire({
-                title: 'هل أنت متأكد؟',
-                text: "سيتم حذف العملية",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                cancelButtonText: 'لا',
-                confirmButtonText: 'نعم',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    destroy(id, ref);
-                }
-            });
-        }
+    @section('content')
 
-        function destroy(id, ref) {
-            axios.delete('/operations/' + id)
-                .then(function(response) {
-                    ref.closest('tr').remove();
-                    showMessage(response.data)
-                })
-                .catch(function(error) {
-                    showMessage(error.response.data)
-                })
-        }
+        <div class="d-none">{{ $counter = 1 }}</div>
+        <div class="container">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title float-none mt-2">
+                        @if ($travelsCount >= 10)
+                            آخر 10 رحلات
+                        @else
+                            آخر الرحلات
+                        @endif
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="width: 10px">#</th>
+                                <th>اسم المستهلك</th>
+                                <th>وجهة الرحلة</th>
+                                <th>سبب الرحلة</th>
+                                <th>تاريخ الرحلة</th>
+                                <th>عدد الكيلومترات المقطوعة</th>
+                                <th style="width: 200px; text-align: center">الإعدادات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($travels as $travel)
+                                <tr>
+                                    <td>{{ $counter++ }}</td>
+                                    <td>{{ $travel->subConsumer->details }}</td>
+                                    <td>{{ $travel->road }}</td>
+                                    <td>{{ $travel->cause }}</td>
+                                    <td>{{ $travel->date }}</td>
+                                    <td>{{ number_format(+$travel->recordAfter - +$travel->recordBefore) }} كيلو متر</td>
+                                    <td class="text-center align-middle">
+                                        <div class="btn-group">
+                                            <a href="{{ route('travels.edit', $travel->id) }}" class="btn btn-success"
+                                                style="border-top-right-radius: 10px;border-bottom-right-radius: 10px"><i
+                                                    class="fas fa-edit"></i></a>
+                                            <a href="#"
+                                                onclick="confirmDestroy('{{ $travel->road }}' , '{{ $travel->id }}' , this)"
+                                                class="btn btn-danger"
+                                                style="border-top-left-radius: 10px;border-bottom-left-radius: 10px"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @endsection
 
-        function showMessage(data) {
-            Swal.fire({
-                toast: true,
-                icon: data.icon,
-                title: data.message,
-                showConfirmButton: false,
-                position: 'top-start',
-                timer: 3000
-            });
-        }
-    </script>
-@endsection
+    @section('script')
+
+        <script>
+            function confirmDestroy(name, id, ref) {
+
+                Swal.fire({
+                    title: 'هل أنت متأكد؟',
+                    text: "سيتم حذف الرحلة (" + name + ")",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'لا',
+                    confirmButtonText: 'نعم',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        destroy(name, id, ref);
+                    }
+                });
+            }
+
+            function destroy(name, id, ref) {
+                axios.delete('/travels/' + id)
+                    .then(function(response) {
+                        console.log(response.data);
+                        ref.closest('tr').remove();
+                        showMessage(response.data)
+                    })
+                    .catch(function(error) {
+                        showMessage(error.response.data)
+                    })
+            }
+
+            function showMessage(data) {
+                console.log(data);
+                Swal.fire({
+                    toast: true,
+                    icon: data.icon,
+                    title: data.message,
+                    showConfirmButton: false,
+                    position: 'top-start',
+                    timer: 3000
+                });
+            }
+        </script>
+    @endsection
+
+@endif

@@ -42,8 +42,8 @@
                                 <div class="info-box-content">
                                     <span class="info-box-text text-center text-muted">قراءة العدّاد السابقة</span>
                                     <span class="info-box-number text-center text-muted mb-0">
-                                        @if ($subConsumer->movementRecord()->first())
-                                            {{ number_format(+$subConsumer->movementRecord()->orderByDesc('date')->orderByDesc('created_at')->first()->record) }}
+                                        @if ($subConsumer->movementRecords()->first())
+                                            {{ number_format(+$subConsumer->movementRecords()->orderByDesc('date')->orderByDesc('created_at')->first()->record) }}
                                         @else
                                             لا يوجد
                                         @endif

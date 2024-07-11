@@ -5,12 +5,11 @@ namespace App\Models;
 use Carbon\Carbon as Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Date;
 
 class Operation extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
     protected $fillable = ['id', 'date', 'sub_consumer_id', 'description', 'amount', 'type', 'foulType', 'dischangeNumber', 'receiverName'];
     protected $casts = [
         'date' => 'datetime'
@@ -99,5 +98,15 @@ class Operation extends Model
         $operationsOut = Operation::all()->where('foulType', $foulType)->where('type', 'صرف')->sum('amount');
         $amounts = $operationsIn - $operationsOut;
         return $amounts;
+    }
+
+
+    public function logFiles()
+    {
+        return $this->morphMany(LogFile::class, 'object', 'object_type', 'object_id', 'id');
+    }
+    public function logFile()
+    {
+        return $this->morphOne(LogFile::class, 'object', 'object_type', 'object_id', 'id');
     }
 }

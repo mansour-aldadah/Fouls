@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\SubConsumer;
 use App\Models\Consumer;
+use App\Models\LogFile;
 use App\Models\MovementRecord;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,7 +42,7 @@ class SubConsumerController extends Controller
             $request->all(),
             [
                 'consumer_id' => 'required',
-                'details' => 'required|unique:sub_consumers',
+                'details' => 'required|unique:sub_consumers,details,NULL,NULL,deleted_at,NULL|max:35',
                 'record' => Rule::requiredIf(fn () => $hasRecord == 1),
                 'date' => Rule::requiredIf(fn () => $hasRecord == 1),
             ],
@@ -49,7 +51,8 @@ class SubConsumerController extends Controller
                 'details.required' => 'أدخل اسم المستهلك',
                 'details.unique' => 'هذا المستهلك موجود مسبقاً',
                 'record' => 'أدخل قراءة العدّاد',
-                'date' => 'أدخل التاريخ'
+                'date' => 'أدخل التاريخ',
+                'details.max' => 'يجب ألا يزيد الاسم عن 35 حرف',
             ]
         );
 
@@ -65,12 +68,30 @@ class SubConsumerController extends Controller
                 $sub_consumer->hasRecord = false;
             }
             $isSaved = $sub_consumer->save();
+            if ($isSaved) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\SubConsumer';
+                $logFile->object_id = $sub_consumer->id;
+                $logFile->action = 'adding';
+                $logFile->old_content = null;
+                $logFile->save();
+            }
             if ($request->input('hasRecord')) {
                 $movementRecord = new MovementRecord();
                 $movementRecord->sub_consumer_id = $sub_consumer->id;
                 $movementRecord->record = $request->input('record');
                 $movementRecord->date = $request->input('date');
                 $isSaved2 = $movementRecord->save();
+                if ($isSaved2) {
+                    $logFile = new LogFile();
+                    $logFile->user_id = Auth::user()->id;
+                    $logFile->object_type = 'App\Models\MovementRecord';
+                    $logFile->object_id = $movementRecord->id;
+                    $logFile->action = 'adding';
+                    $logFile->old_content = null;
+                    $logFile->save();
+                }
             }
             return response()->json([
                 'icon' => 'success',
@@ -110,14 +131,17 @@ class SubConsumerController extends Controller
             $request->all(),
             [
                 'consumer_id' => 'required',
-                'details' => 'required'
+                'details' => 'required|unique:sub_consumers,details,' . $subConsumer->id . ',id,deleted_at,NULL|max:35',
             ],
             [
                 'consumer_id.required' => 'أدخل اسم المستهلك الرئيسي',
                 'details.required' => 'أدخل اسم المستهلك',
+                'details.unique' => 'هذا المستهلك موجود مسبقاً',
+                'details.max' => 'يجب ألا يزيد الاسم عن 35 حرف',
             ]
         );
         if (!$validator->fails()) {
+            $old = $subConsumer->replicate();
             $subConsumer->consumer_id = $request->input('consumer_id');
             $subConsumer->details = $request->input('details');
             $subConsumer->description = $request->input('description');
@@ -127,6 +151,15 @@ class SubConsumerController extends Controller
                 $subConsumer->hasRecord = false;
             }
             $isUpdated = $subConsumer->save();
+            if ($isUpdated) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\SubConsumer';
+                $logFile->object_id = $subConsumer->id;
+                $logFile->action = 'editting';
+                $logFile->old_content = $old;
+                $logFile->save();
+            }
             return response()->json([
                 'icon' => 'success',
                 'message' => $isUpdated ? 'تم التعديل بنجاح' : 'فشل في التعديل'
@@ -144,7 +177,17 @@ class SubConsumerController extends Controller
      */
     public function destroy(SubConsumer $subConsumer)
     {
+        $old = $subConsumer;
         $isDeleted = $subConsumer->delete();
+        if ($isDeleted) {
+            $logFile = new LogFile();
+            $logFile->user_id = Auth::user()->id;
+            $logFile->object_type = 'App\Models\SubConsumer';
+            $logFile->object_id = $old->id;
+            $logFile->action = 'deleting';
+            $logFile->old_content = $old;
+            $logFile->save();
+        }
         return response()->json([
             'icon' => $isDeleted ? 'success' : 'error',
             'message' => $isDeleted ? 'تم حذف المستهلك ' . $subConsumer->details : 'فشل حذف المستهلك ' . $subConsumer->details

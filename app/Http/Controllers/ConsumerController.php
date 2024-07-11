@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Consumer;
+use App\Models\LogFile;
 use App\Models\SubConsumer;
 use Dotenv\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class ConsumerController extends Controller
@@ -42,17 +44,28 @@ class ConsumerController extends Controller
         $validator = Validator(
             $request->all(),
             [
-                'name' => 'required|unique:consumers',
+                'name' => 'required|unique:consumers,name,NULL,NULL,deleted_at,NULL|max:35',
             ],
             [
                 'name.required' => 'أدخل اسم المستهلك',
-                'name.unique' => 'هذا المستهلك موجود مسبقاً'
+                'name.unique' => 'هذا المستهلك موجود مسبقاً',
+                'name.max' => 'يجب ألا يزيد الاسم عن 35 حرف',
+
             ]
         );
         if (!$validator->fails()) {
             $consumer = new Consumer();
             $consumer->name = $request->input('name');
             $isSaved = $consumer->save();
+            if ($isSaved) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\Consumer';
+                $logFile->object_id = $consumer->id;
+                $logFile->action = 'adding';
+                $logFile->old_content = null;
+                $logFile->save();
+            }
             return response()->json([
                 'icon' => 'success',
                 'message' => $isSaved ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة'
@@ -91,15 +104,29 @@ class ConsumerController extends Controller
         $validator = Validator(
             $request->all(),
             [
-                'name' => 'required',
+                'name' => 'required|unique:consumers,name,' . $consumer->id . ',id,deleted_at,NULL|max:35',
             ],
             [
                 'name.required' => 'أدخل اسم المستهلك',
+                'name.unique' => 'هذا المستهلك موجود مسبقاً',
+                'name.max' => 'يجب ألا يزيد الاسم عن 35 حرف',
             ]
         );
+
+
         if (!$validator->fails()) {
+            $old = $consumer->replicate();
             $consumer->name = $request->input('name');
             $isUpdated = $consumer->save();
+            if ($isUpdated) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\Consumer';
+                $logFile->object_id = $consumer->id;
+                $logFile->action = 'editting';
+                $logFile->old_content = $old;
+                $logFile->save();
+            }
             return response()->json([
                 'icon' => 'success',
                 'message' => $isUpdated ? 'تم التعديل بنجاح' : 'فشل في التعديل'
@@ -117,7 +144,17 @@ class ConsumerController extends Controller
      */
     public function destroy(Consumer $consumer)
     {
+        $old = $consumer;
         $isDeleted = $consumer->delete();
+        if ($isDeleted) {
+            $logFile = new LogFile();
+            $logFile->user_id = Auth::user()->id;
+            $logFile->object_type = 'App\Models\Consumer';
+            $logFile->object_id = $old->id;
+            $logFile->action = 'deleting';
+            $logFile->old_content = $old;
+            $logFile->save();
+        }
         return response()->json([
             'icon' => $isDeleted ? 'success' : 'error',
             'message' => $isDeleted ? 'تم حذف المستهلك ' . $consumer->name : 'فشل حذف المستهلك ' . $consumer->name

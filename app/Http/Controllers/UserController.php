@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Consumer;
+use App\Models\LogFile;
 use App\Models\User;
+use App\Models\UserConsumer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -26,7 +29,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('users.create');
+        $consumers = Consumer::all();
+        return view('users.create', ['consumers' => $consumers]);
     }
     public function passwordReset(User $user)
     {
@@ -52,12 +56,22 @@ class UserController extends Controller
         );
 
         if (!$validator->fails()) {
+            $old = $user->replicate();
             $user->password =  Hash::make($request->password);
-            $isSaved = $user->save();
+            $isUpdated = $user->save();
+            if ($isUpdated) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\User';
+                $logFile->object_id = $user->id;
+                $logFile->action = 'editting';
+                $logFile->old_content = $old;
+                $logFile->save();
+            }
             return response()->json([
                 'icon' => 'success',
-                'message' => $isSaved ? 'تم تغيير كلمة المرور بنجاح' : 'فشل في تغيير كلمة المرور'
-            ], $isSaved ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
+                'message' => $isUpdated ? 'تم تغيير كلمة المرور بنجاح' : 'فشل في تغيير كلمة المرور'
+            ], $isUpdated ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
         } else {
             return response()->json([
                 'icon' => 'warning',
@@ -71,25 +85,45 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-
+        $role = $request->input('role');
         $validator = Validator(
             $request->all(),
             [
                 'username' => ['required', 'string', 'max:255'],
                 'password' => ['required', 'confirmed', Password::defaults()],
+                'role' => ['required'],
+                'consumer_id' => Rule::requiredIf(fn () => $role == 'مستهلك')
             ],
             [
                 'username.required' => 'أدخل اسم المستخدم',
                 'password.required' => 'أدخل كلمة المرور',
-                'password.confirmed' => 'كلمة المرور وتأكيدها غير متطابقتين'
+                'role' => 'أدخل نوع المستخدم',
+                'password.confirmed' => 'كلمة المرور وتأكيدها غير متطابقتين',
+                'consumer_id' => 'أدخل اسم المستهلكين المسؤول عنهم'
             ]
         );
-
+        // SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'user_id' cannot be null (Connection: mysql, SQL: insert into `user_consumers` (`consumer_id`, `user_id`, `updated_at`, `created_at`) values (5, ?, 2024-06-30 11:42:57, 2024-06-30 11:42:57))
         if (!$validator->fails()) {
             $user = new User();
             $user->username = $request->username;
             $user->password =  Hash::make($request->password);
+            $user->role = $request->input('role');
             $isSaved = $user->save();
+            if ($isSaved) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\User';
+                $logFile->object_id = $user->id;
+                $logFile->action = 'adding';
+                $logFile->old_content = null;
+                $logFile->save();
+            }
+            if ($role == 'مستهلك') {
+                $userConsumers = new UserConsumer();
+                $userConsumers->consumer_id = $request->input('consumer_id');
+                $userConsumers->user_id = $user->id;
+                $isSaved2 = $userConsumers->save();
+            }
             return response()->json([
                 'icon' => 'success',
                 'message' => $isSaved ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة'
@@ -115,7 +149,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('users.edit', ['user' => $user]);
+        $consumers = Consumer::all();
+        return view('users.edit', ['user' => $user, 'consumers' => $consumers]);
     }
 
     /**
@@ -123,19 +158,49 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $role = $request->input('role');
+        $oldRole = $user->role;
         $validator = Validator(
             $request->all(),
             [
                 'username' => ['required', 'string', 'max:255'],
+                'role' => ['required'],
+                'consumer_id' => Rule::requiredIf(fn () => $role == 'مستهلك')
             ],
             [
                 'username.required' => 'أدخل اسم المستخدم',
+                'consumer_id' => 'أدخل اسم المستهلكين المسؤول عنهم',
+                'role' => 'أدخل نوع المستخدم',
             ]
         );
 
         if (!$validator->fails()) {
+            $old = $user->replicate();
             $user->username = $request->username;
+            $user->role = $request->input('role');
             $isUpdated = $user->save();
+            if ($isUpdated) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\User';
+                $logFile->object_id = $user->id;
+                $logFile->action = 'editting';
+                $logFile->old_content = $old;
+                $logFile->save();
+            }
+            if ($oldRole == 'مستخدم' && $role == 'مستهلك') {
+                $userConsumers = new UserConsumer();
+                $userConsumers->user_id = $user->id;
+                $userConsumers->consumer_id = $request->input('consumer_id');
+                $isSaved = $userConsumers->save();
+            } elseif ($oldRole == 'مستهلك' && $role == 'مستهلك') {
+                $userConsumers = UserConsumer::where('user_id', $user->id);
+                $userConsumers->consumer_id = $request->input('consumer_id');
+                $isUpdated2 = $userConsumers->save();
+            } elseif ($oldRole == 'مستهلك' && $role == 'مستخدم') {
+                $userConsumers = UserConsumer::where('user_id', $user->id);
+                $isDeleted = $userConsumers->delete();
+            }
             return response()->json([
                 'icon' => 'success',
                 'message' => $isUpdated ? 'تم التعديل بنجاح' : 'فشل في التعديل'
@@ -153,7 +218,18 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $isDeleted =  $user->delete();
+        $old = $user;
+        $userConsumers = UserConsumer::where('user_id', $user->id);
+        $isDeleted =  $userConsumers->delete() && $user->delete();
+        if ($isDeleted) {
+            $logFile = new LogFile();
+            $logFile->user_id = Auth::user()->id;
+            $logFile->object_type = 'App\Models\User';
+            $logFile->object_id = $old->id;
+            $logFile->action = 'deleting';
+            $logFile->old_content = $old;
+            $logFile->save();
+        }
         return response()->json([
             'icon' => $isDeleted ? 'success' : 'error',
             'message' => $isDeleted ? 'تم حذف المستخدم ' . $user->username : 'فشل حذف المستخدم ' . $user->username

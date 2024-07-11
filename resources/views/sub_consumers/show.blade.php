@@ -52,10 +52,10 @@
                 <div class="col-12 col-md-12 col-lg-12 order-1 order-md-2">
                     <div class="d-none">
                         {{ $operations = $subConsumer->operations }}
-                        {{ $movementRecords = App\Models\MovementRecord::all()->where('sub_consumer_id', $subConsumer->id) }}
+                        {{ $movementRecords = App\Models\MovementRecord::orderByDesc('date')->orderByDesc('created_at')->get()->where('sub_consumer_id', $subConsumer->id) }}
                         {{ $page = 'show' }}
                     </div>
-                    @if ($operations || $movementRecords || $subConsumer->description)
+                    @if ($operations->first() || $movementRecords->first() || $subConsumer->description)
                         <h3 class="text-primary"><i class="fas fa-paint-brush mr-2"></i>التفاصيل</h3>
                         @if ($subConsumer->description)
                             <p class="mt-4 mr-4">
@@ -64,7 +64,7 @@
                         @endif
                     @endif
                     <br>
-                    @if ($operations)
+                    @if ($operations->first())
                         <div class="d-none"> {{ $counter = 1 }}</div>
                         <div class="card">
                             <div class="card-header">
@@ -149,7 +149,7 @@
                         </div>
                     @endif
 
-                    @if ($movementRecords)
+                    @if ($subConsumer->hasRecord)
                         <div class="d-none"> {{ $counter = 1 }}</div>
                         <div class="card">
                             <div class="card-header">
@@ -163,7 +163,7 @@
                                             <th style="width: 10px">#</th>
                                             <th style=" text-align: center">قراءة العدّاد</th>
                                             <th style=" text-align: center">التاريخ</th>
-                                            <th style=" text-align: center">الإعدادات</th>
+                                            <th style=" text-align: center; width: 150px">الإعدادات</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -177,21 +177,20 @@
                                                     {{ number_format(+$movementRecord->record) }}</td>
                                                 <td style=" text-align: center">{{ $movementRecord->date }}</td>
                                                 <td class="text-center align-middle">
-                                                    <div class="btn-group">
-                                                        <a href="{{ route('movement_records.edit', [$subConsumer->id, $movementRecord->id]) }}"
-                                                            class="btn btn-success"
-                                                            style="border-top-right-radius: 10px;border-bottom-right-radius: 10px;"><i
-                                                                class="fas fa-edit"></i></a>
-                                                        <a href="#"
-                                                            onclick="confirmDestroy2('{{ $movementRecord->id }}' , this)"
-                                                            class="btn btn-danger"
-                                                            style="border-top-left-radius: 10px;border-bottom-left-radius: 10px"><i
-                                                                class="fas fa-trash"></i></a>
-                                                    </div>
+                                                    @if ($counter == 2)
+                                                        <div class="btn-group">
+                                                            <a href="#"
+                                                                onclick="confirmDestroy2('{{ $movementRecord->id }}' , this)"
+                                                                class="btn btn-danger"
+                                                                style="border-top-left-radius: 10px;border-bottom-left-radius: 10px;border-top-right-radius: 10px;border-bottom-right-radius: 10px;"><i
+                                                                    class="fas fa-trash"></i></a>
+                                                        </div>
+                                                    @else
+                                                        -
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforeach
-
                                     </tbody>
                                 </table>
                             </div>

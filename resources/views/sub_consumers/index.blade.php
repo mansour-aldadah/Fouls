@@ -44,11 +44,14 @@
                             @endif
                             <td class="text-center align-middle">{{ $subConsumer->operations()->count() }}</td>
                             <td class="text-center align-middle">
-
-                                @if ($subConsumer->movementRecords()->first())
-                                    {{ number_format($subConsumer->movementRecords()->orderByDesc('date')->orderByDesc('created_at')->get()[0]->record) }}
+                                @if ($subConsumer->hasRecord)
+                                    @if ($subConsumer->movementRecords()->first())
+                                        {{ number_format($subConsumer->movementRecords()->orderByDesc('date')->orderByDesc('created_at')->get()[0]->record) }}
+                                    @else
+                                        -
+                                    @endif
                                 @else
-                                    -
+                                    ليس له عدّاد
                                 @endif
                             </td>
                             <td class="text-center align-middle">
