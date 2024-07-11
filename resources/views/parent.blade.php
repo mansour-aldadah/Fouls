@@ -74,10 +74,10 @@
                             تغيير كلمة المرور
                         </a>
                         <div class="dropdown-divider"></div>
-                        <form method="POST" action="http://127.0.0.1:8000/logout">
+                        <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <a class="dropdown-item text-center block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
-                                href="http://127.0.0.1:8000/logout"
+                                href="{{ route('logout') }}"
                                 onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 تسجيل الخروج
@@ -157,7 +157,7 @@
                     </div>
                     <div class="info">
                         <a href="#" class="d-block"> أهلاً
-                            {{ Illuminate\Support\Facades\Auth::user()->username }}</a>
+                            {{ Illuminate\Support\Facades\Auth::user()->name }}</a>
                     </div>
                 </div>
 
