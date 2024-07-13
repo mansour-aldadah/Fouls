@@ -312,8 +312,10 @@ class OperationController extends Controller
             $logFile->action = 'adding';
             $logFile->old_content = null;
             $logFile->save();
+            session()->flash('messege', $isSaved && $isSaved2 ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة');
+            return redirect()->route('operations.index');
         }
-        session()->flash('messege', $isSaved && $isSaved2 ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة');
+        session()->flash('messege', $isSaved ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة');
         return redirect()->route('operations.index');
     }
 
