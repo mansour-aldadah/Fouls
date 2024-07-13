@@ -277,6 +277,7 @@ class OperationController extends Controller
         $operation->receiverName = $request->input('receiverName');
         $operation->foulType = $request->input('foulType');
         $operation->description = $request->input('description');
+        $isSaved2 = false;
         if ($record) {
             $last = SubConsumer::find($request->input('sub_consumer_name'))->movementRecords()->orderByDesc('date')->orderByDesc('created_at')->first()->record ??  '0';
             $request->validate([
