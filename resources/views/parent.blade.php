@@ -42,6 +42,7 @@
     <link rel="stylesheet" href="{{ asset('assets/dist/css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/dist/css/sweet-alert2.css') }}">
     <link rel="icon" href="{{ asset('assets/images/car-fuel-gas-svgrepo-com.svg') }}" type="image/svg+xml">
+    @yield('style')
 </head>
 
 {{-- <body onload="window.print();"> --}}
@@ -325,6 +326,14 @@
                                             <a href="{{ route('operations.search') }}" class="nav-link">
                                                 <i class="fas fa-search nav-icon ml-3 mr-0"></i>
                                                 <p>بحث</p>
+                                            </a>
+                                        </li>
+                                    @endif
+                                    @if (App\Models\Operation::first())
+                                        <li class="nav-item">
+                                            <a href="{{ route('operations.closeMonth') }}" class="nav-link">
+                                                <i class="fas fa-inbox nav-icon ml-3 mr-0"></i>
+                                                <p>ترحيل عمليات</p>
                                             </a>
                                         </li>
                                     @endif

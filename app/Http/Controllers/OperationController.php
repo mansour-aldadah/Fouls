@@ -26,6 +26,46 @@ class OperationController extends Controller
         $operations = Operation::orderByDesc('date')->orderByDesc('created_at')->get();
         return response()->view('operations.index', ['operations' => $operations]);
     }
+    public function closeMonth()
+    {
+        $operations = Operation::where('isClosed', false)->get();
+        $months = [];
+        foreach ($operations as $operation) {
+            $month = $operation->date->format('Y-m');
+            if (!in_array($month, $months)) {
+                $months[] = $month;
+            }
+        }
+        return response()->view('operations.close-month', ['months' => $months, 'operations' => $operations]);
+    }
+    public function updateIsClosed(Request $request)
+    {
+        $validator = Validator(
+            $request->all(),
+            [
+                'month' => 'required',
+            ],
+            [
+                'month.required' => 'أدخل الشهر',
+            ]
+        );
+        if (!$validator->fails()) {
+            $operations = Operation::all()->where('month', $request->input('month'));
+            foreach ($operations as $operation) {
+                $operation->isClosed = true;
+                $isUpdated = $operation->save();
+            }
+            return response()->json([
+                'icon' => 'success',
+                'message' => $isUpdated ? 'تم إغلاق شهر' . $request->input('month') . 'بنجاح' : 'فشل في الإغلاق'
+            ], $isUpdated ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
+        } else {
+            return response()->json([
+                'icon' => 'warning',
+                'message' => $validator->getMessageBag()->first()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
     public function indexIncome($time)
     {
         if ($time == 'all') {

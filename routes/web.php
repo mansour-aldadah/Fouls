@@ -42,6 +42,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth', 'isAdminOrUser'])->group(function () {
+    Route::get('/operations/close-month', [OperationController::class, 'closeMonth'])->name('operations.closeMonth');
+    Route::PUT('/operations/close-month', [OperationController::class, 'updateIsClosed'])->name('operations.updateIsClosed');
     Route::get('/operations/check-has-record/{subConsumerId}', [OperationController::class, 'checkHasRecord']);
     Route::get('users/password-reset/{user}', [UserController::class, 'passwordReset'])->name('users.password-reset');
     Route::put('users/password-reset/{user}', [UserController::class, 'updatePassword'])->name('users.updatePassword');

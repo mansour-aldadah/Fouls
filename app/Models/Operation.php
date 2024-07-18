@@ -26,6 +26,12 @@ class Operation extends Model
             return $this->date->format('Y-m-d');
         }
     }
+    public function getmonthAttribute()
+    {
+        if ($this->date) {
+            return $this->date->format('Y-m');
+        }
+    }
     public static function getNow()
     {
         return date('Y-M-D');
