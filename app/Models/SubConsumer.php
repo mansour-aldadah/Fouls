@@ -34,7 +34,7 @@ class SubConsumer extends Model
 
     public function operations()
     {
-        return $this->hasMany(Operation::class, 'sub_consumer_id', 'id');
+        return $this->hasMany(Operation::class, 'sub_consumer_id', 'id')->where('isClosed' , false);
     }
     public function movementRecords()
     {

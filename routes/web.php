@@ -23,7 +23,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::get('/dashboard', function () {
-    $operaions = Operation::orderByDesc('date')->orderByDesc('created_at')->take(10)->get();
+    $operaions = Operation::orderByDesc('date')->orderByDesc('created_at')->where('isClosed', false)->take(10)->get();
     $travels = Travel::orderByDesc('date')->orderByDesc('created_at')->take(10)->get();
     return view('home', ['operations' => $operaions, 'travels' => $travels]);
 })->middleware(['auth', 'verified'])->name('dashboard');

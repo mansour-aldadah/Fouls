@@ -8,13 +8,18 @@ use App\Models\LogFile;
 use App\Models\MovementRecord;
 use App\Models\SubConsumer;
 use Carbon\Carbon;
+use DateTime;
 use Hamcrest\Type\IsInteger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use PHPUnit\Event\Runtime\OperatingSystem;
 use Ramsey\Uuid\Type\Integer;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Validator;
+
 
 class OperationController extends Controller
 {
@@ -23,7 +28,7 @@ class OperationController extends Controller
      */
     public function index()
     {
-        $operations = Operation::orderByDesc('date')->orderByDesc('created_at')->get();
+        $operations = Operation::where('isClosed', false)->orderByDesc('date')->orderByDesc('created_at')->get();
         return response()->view('operations.index', ['operations' => $operations]);
     }
     public function closeMonth()
@@ -40,72 +45,158 @@ class OperationController extends Controller
     }
     public function updateIsClosed(Request $request)
     {
-        $validator = Validator(
+        $currentMonth = Carbon::now()->format('Y-m');
+
+        $validator = Validator::make(
             $request->all(),
             [
-                'month' => 'required',
+                'month' => [
+                    'required',
+                    function ($attribute, $value, $fail) use ($currentMonth) {
+                        if ($value == $currentMonth) {
+                            $fail('الشهر لا يمكن أن يكون الشهر الحالي');
+                        }
+                    },
+                ],
             ],
             [
                 'month.required' => 'أدخل الشهر',
             ]
         );
-        if (!$validator->fails()) {
-            $operations = Operation::all()->where('month', $request->input('month'));
-            foreach ($operations as $operation) {
-                $operation->isClosed = true;
-                $isUpdated = $operation->save();
-            }
-            return response()->json([
-                'icon' => 'success',
-                'message' => $isUpdated ? 'تم إغلاق شهر' . $request->input('month') . 'بنجاح' : 'فشل في الإغلاق'
-            ], $isUpdated ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
-        } else {
+
+        if ($validator->fails()) {
             return response()->json([
                 'icon' => 'warning',
                 'message' => $validator->getMessageBag()->first()
             ], Response::HTTP_BAD_REQUEST);
         }
+
+        $monthInput = $request->input('month'); // Expected format: '02-2024'
+        $dateParts = explode('-', $monthInput); // Splitting by '-'
+
+        if (count($dateParts) != 2) {
+            return response()->json([
+                'icon' => 'warning',
+                'message' => 'تنسيق التاريخ غير صحيح',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Convert to integers
+        $month = (int)$dateParts[1];
+        $year = (int)$dateParts[0];
+
+        // Additional debugging: check the parsed values
+        if ($month < 1 || $month > 12 || $year < 1900 || $year > 2100) {
+            return response()->json([
+                'icon' => 'warning',
+                'message' => 'التاريخ غير صالح',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            // Alternative approach to create a Carbon date from the provided month and year
+            $dateString = sprintf('%04d-%02d-01', $year, $month);
+            $date = Carbon::createFromFormat('Y-m-d', $dateString);
+
+            Log::debug("Created Carbon date: $date");
+
+            $firstOfNextMonth = $date->addMonth()->startOfMonth()->format('Y-m-d');
+        } catch (\Exception $e) {
+            Log::error("Date processing error: " . $e->getMessage());
+
+            return response()->json([
+                'icon' => 'warning',
+                'message' => 'خطأ في معالجة التاريخ',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $amount = Operation::getExistOFWithMonth('سولار', $request->input('month'));
+        $isUpdated = false;
+        if ($amount > 0) {
+            $operation = new Operation();
+            $operation->date = $firstOfNextMonth;
+            $operation->type = 'وارد شهر';
+            $operation->amount = $amount;
+            $operation->foulType = 'سولار';
+            $operation->description = 'وارد من شهر ' . $monthInput;
+            $operation->save();
+            $operations = Operation::all()->where('month', $request->input('month'));
+            foreach ($operations as $op) {
+                $op->isClosed = true;
+                $isUpdated = $op->save();
+            }
+        }
+        $amount = Operation::getExistOFWithMonth('بنزين', $request->input('month'));
+        $isUpdated2 = false;
+        if ($amount > 0) {
+            $operation = new Operation();
+            $operation->date = $firstOfNextMonth;
+            $operation->type = 'وارد شهر';
+            $operation->description = 'وارد من شهر ' . $monthInput;
+            $operation->amount = $amount;
+            $operation->foulType = 'بنزين';
+            $operation->save();
+            $operations = Operation::all()->where('month', $request->input('month'));
+            foreach ($operations as $op) {
+                $op->isClosed = true;
+                $isUpdated2 = $op->save();
+            }
+        }
+
+        if ($isUpdated2 || $isUpdated) {
+            $logFile = new LogFile();
+            $logFile->user_id = Auth::user()->id;
+            $logFile->object_type = 'App\Models\Operation';
+            $logFile->object_id = $operation->id;
+            $logFile->action = 'adding';
+            $logFile->old_content = null;
+            $logFile->save();
+        }
+
+
+        return response()->json([
+            'icon' => 'success',
+            'message' => $isUpdated || $isUpdated2 ? 'تم إغلاق شهر ' . $request->input('month') . ' بنجاح' : 'فشل في الإغلاق'
+        ], $isUpdated ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
     }
+
+
+
     public function indexIncome($time)
     {
         if ($time == 'all') {
-            $operations = Operation::where('type', 'وارد')->orderByDesc('date')->orderByDesc('created_at')->get();
+            $operations = Operation::where('isClosed', false)->whereIn('type', ['وارد', 'وارد شهر'])->orderByDesc('date')->orderByDesc('created_at')->get();
             return response()->view('operations.index-income', ['operations' => $operations]);
         } elseif ($time == 'month') {
             $startOfMonth = Carbon::now()->startOfMonth(Carbon::SATURDAY)->format('Y-m-d');
             $endOfMonth = Carbon::now()->endOfMonth(Carbon::FRIDAY)->format('Y-m-d');
-            $operations = Operation::where('type', 'وارد')->whereBetween('date', [$startOfMonth, $endOfMonth])->orderByDesc('date')->orderByDesc('created_at')->get();
+            $operations = Operation::whereIn('type', ['وارد', 'وارد شهر'])->where('isClosed', false)->whereBetween('date', [$startOfMonth, $endOfMonth])->orderByDesc('date')->orderByDesc('created_at')->get();
             return response()->view('operations.index-income', ['operations' => $operations]);
         }
     }
     public function indexOutcome($time)
     {
         if ($time == 'all') {
-            $operations = Operation::where('type', 'صرف')->orderByDesc('date')->orderByDesc('created_at')->get();
+            $operations = Operation::where('isClosed', false)->where('type', 'صرف')->orderByDesc('date')->orderByDesc('created_at')->get();
             return response()->view('operations.index-outcome', ['operations' => $operations]);
         } elseif ($time == 'month') {
             $startOfMonth = Carbon::now()->startOfMonth(Carbon::SATURDAY)->format('Y-m-d');
             $endOfMonth = Carbon::now()->endOfMonth(Carbon::FRIDAY)->format('Y-m-d');
-            $operations = Operation::where('type', 'صرف')->whereBetween('date', [$startOfMonth, $endOfMonth])->orderByDesc('date')->orderByDesc('date')->orderByDesc('created_at')->get();
+            $operations = Operation::where('isClosed', false)->where('type', 'صرف')->whereBetween('date', [$startOfMonth, $endOfMonth])->orderByDesc('date')->orderByDesc('date')->orderByDesc('created_at')->get();
             return response()->view('operations.index-outcome', ['operations' => $operations]);
         } elseif ($time == 'week') {
             $startOfWeek = Carbon::now()->startOfWeek(Carbon::SATURDAY)->format('Y-m-d');
             $endOfWeek = Carbon::now()->endOfWeek(Carbon::FRIDAY)->format('Y-m-d');
-            $operations = Operation::where('type', 'صرف')->whereBetween('date', [$startOfWeek, $endOfWeek])->orderByDesc('date')->orderByDesc('created_at')->get();
+            $operations = Operation::where('isClosed', false)->where('type', 'صرف')->whereBetween('date', [$startOfWeek, $endOfWeek])->orderByDesc('date')->orderByDesc('created_at')->get();
             return response()->view('operations.index-outcome', ['operations' => $operations]);
         } elseif ($time == 'today') {
-            $operations = Operation::where('type', 'صرف')->where('date', now()->format('Y-m-d'))->orderByDesc('date')->orderByDesc('created_at')->get();
+            $operations = Operation::where('isClosed', false)->where('type', 'صرف')->where('date', now()->format('Y-m-d'))->orderByDesc('date')->orderByDesc('created_at')->get();
             return response()->view('operations.index-outcome', ['operations' => $operations]);
         }
     }
-
-    /**S
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
     }
-
     public function search()
     {
         $consumers = Consumer::all();
@@ -167,7 +258,7 @@ class OperationController extends Controller
             );
             $operations->where('date', '>=', $From);
         } else {
-            if ($From || $To) {
+            if ($From && $To) {
                 $request->validate(
                     [
                         'from_date' => 'required',
@@ -231,7 +322,6 @@ class OperationController extends Controller
         ]);
         return view('operations.search-result', ['operations' => $operations]);
     }
-
     public function print()
     {
         // Retrieve the results from the session
@@ -272,9 +362,6 @@ class OperationController extends Controller
         $subConsumers = SubConsumer::all();
         return view('operations.create-outcome', ['consumers' => $consumers, 'subConsumers' => $subConsumers]);
     }
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $record = $request->input('record');
@@ -297,7 +384,8 @@ class OperationController extends Controller
             'dischangeNumber.unique' => 'هذا السند موجود مسبقاً',
             'dischangeNumber.regex' => 'يجب أن يتكون سند الصرف من 4 أرقام',
         ]);
-
+        // dd($request->foulType);
+        // dd(Operation::getExistOF($request->foulType));
         if (+$request->amount > Operation::getExistOF($request->foulType)) {
             $request->validate(['amount' => function ($attribute, $value, $fail) {
                 return $fail('لا يوجد ما يكفي من الوقود لصرف هذه الكمية');
@@ -361,7 +449,6 @@ class OperationController extends Controller
             return redirect()->route('operations.index');
         }
     }
-
     public function store_income(Request $request)
     {
         $request->validate([
@@ -398,10 +485,6 @@ class OperationController extends Controller
         session()->flash('messege', $isSaved ? 'تمت الإضافة بنجاح' : 'فشل في الإضافة');
         return redirect()->route('operations.index');
     }
-
-    /**
-     * Display the specified resource.
-     */
     public function show(Operation $operation)
     {
         return response()->view('operations.show', ['operation' => $operation]);
@@ -414,10 +497,6 @@ class OperationController extends Controller
     {
         return response()->view('operations.show-income', ['operation' => $operation]);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Operation $operation)
     {
     }
@@ -444,10 +523,6 @@ class OperationController extends Controller
             'page' => $page
         ]);
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Operation $operation)
     {
         // dd($request->page);
@@ -560,7 +635,6 @@ class OperationController extends Controller
         }
         return redirect()->route('operations.index');
     }
-
     public function checkHasRecord($subConsumerId)
     {
         $subConsumer = SubConsumer::find($subConsumerId);
@@ -568,9 +642,6 @@ class OperationController extends Controller
         // Assuming `hasRecord` is a boolean attribute of the SubConsumer model
         return response()->json(['hasRecord' => $subConsumer->hasRecord]);
     }
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Operation $operation)
     {
         $old = $operation;

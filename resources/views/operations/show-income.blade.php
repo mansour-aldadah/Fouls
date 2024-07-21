@@ -79,7 +79,7 @@
                     </div>
                     </ul>
                     <div class="text-center mt-5 mb-3">
-                        @if ($operation->type == 'وارد')
+                        @if ($operation->type == 'وارد' || $operation->type == 'وارد شهر')
                             <a href="{{ route('operations.edit-income', [$operation->id, $page]) }}"
                                 class="btn btn-sm btn-info" style="width: 100px"><i class="fas fa-edit"></i> تعديل
                             </a>

@@ -1,8 +1,8 @@
 @extends('parent')
 
-@section('title', 'إغلاق شهر')
+@section('title', 'ترحيل عمليات')
 
-@section('header', 'إغلاق شهر')
+@section('header', 'ترحيل عمليات')
 
 @section('content')
     <div class="d-none"> {{ $counter = 1 }}</div>

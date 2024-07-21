@@ -26,7 +26,7 @@ class Consumer extends Model
 
     public function operations()
     {
-        return $this->hasManyThrough(Operation::class, SubConsumer::class, 'consumer_id', 'sub_consumer_id');
+        return $this->hasManyThrough(Operation::class, SubConsumer::class, 'consumer_id', 'sub_consumer_id')->where('isClosed', false);
     }
     public function users()
     {

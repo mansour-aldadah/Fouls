@@ -38,7 +38,7 @@ class Operation extends Model
     }
     public static function getToday()
     {
-        $operations = static::all()->where('type', 'صرف')->where('new_date', now()->format('Y-m-d'));
+        $operations = static::where('type', 'صرف')->get()->where('new_date', now()->format('Y-m-d'))->where('isClosed', false);
         return $operations->sum('amount') ?? 0;
     }
 
@@ -49,7 +49,7 @@ class Operation extends Model
 
         // dd($startOfWeek);
 
-        $operations = static::all()->where('type', 'صرف')->whereBetween('new_date', [$startOfWeek, $endOfWeek]);
+        $operations = static::where('type', 'صرف')->get()->whereBetween('new_date', [$startOfWeek, $endOfWeek])->where('isClosed', false);
 
         return $operations->sum('amount') ?? 0;
     }
@@ -60,7 +60,7 @@ class Operation extends Model
 
         // dd($startOfMonth);
 
-        $operations = static::all()->where('type', 'صرف')->whereBetween('new_date', [$startOfMonth, $endOfMonth]);
+        $operations = static::where('type', 'صرف')->get()->whereBetween('new_date', [$startOfMonth, $endOfMonth])->where('isClosed', false);
 
         return $operations->sum('amount') ?? 0;
     }
@@ -71,13 +71,16 @@ class Operation extends Model
 
         // dd($startOfMonth);
 
-        $operations = static::all()->where('type', 'وارد')->whereBetween('new_date', [$startOfMonth, $endOfMonth]);
+        $operations = static::where(function ($query) {
+            $query->where('type', 'وارد')
+                ->orWhere('type', 'وارد شهر');
+        })->get()->whereBetween('new_date', [$startOfMonth, $endOfMonth])->where('isClosed', false);
 
         return $operations->sum('amount') ?? 0;
     }
     public static function getOutcomes()
     {
-        $operations = static::all()->where('type', 'صرف');
+        $operations = static::where('type', 'صرف')->get()->where('isClosed', false);
         $outcomes = 0;
         foreach ($operations as $operation) {
             $outcomes += $operation->amount;
@@ -86,7 +89,10 @@ class Operation extends Model
     }
     public static function getIncomes()
     {
-        $operations = static::all()->where('type', 'وارد');
+        $operations = static::where(function ($query) {
+            $query->where('type', 'وارد')
+                ->orWhere('type', 'وارد شهر');
+        })->where('isClosed', false)->get();
         $incomes = 0;
         foreach ($operations as $operation) {
             $incomes += $operation->amount;
@@ -100,12 +106,35 @@ class Operation extends Model
 
     public static function getExistOF($foulType)
     {
-        $operationsIn = Operation::all()->where('foulType', $foulType)->where('type', 'وارد')->sum('amount');
-        $operationsOut = Operation::all()->where('foulType', $foulType)->where('type', 'صرف')->sum('amount');
+        $operationsIn = Operation::where('foulType', $foulType)
+            ->whereIn('type', ['وارد شهر', 'وارد'])->where('isClosed', false)->get()->sum('amount');
+        $operationsOut = Operation::where('foulType', $foulType)->where('type', 'صرف')->where('isClosed', false)->get()->sum('amount');
         $amounts = $operationsIn - $operationsOut;
         return $amounts;
     }
+    public static function getExistOFWithMonth($foulType, $month)
+    {
+        // Format month to match 'Y-m'
+        $monthFormatted = Carbon::createFromFormat('Y-m', $month)->format('Y-m');
 
+        $operationsIn = Operation::where('foulType', $foulType)
+            ->where(function ($query) {
+                $query->where('type', 'وارد')
+                    ->orWhere('type', 'وارد شهر');
+            })
+            ->whereRaw('DATE_FORMAT(date, "%Y-%m") = ?', [$monthFormatted])
+            ->where('isClosed', false)
+            ->sum('amount');
+
+        $operationsOut = Operation::where('foulType', $foulType)
+            ->where('type', 'صرف')
+            ->whereRaw('DATE_FORMAT(date, "%Y-%m") = ?', [$monthFormatted])
+            ->where('isClosed', false)
+            ->sum('amount');
+
+        $amounts = $operationsIn - $operationsOut;
+        return $amounts;
+    }
 
     public function logFiles()
     {
