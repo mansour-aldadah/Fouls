@@ -38,7 +38,7 @@ class Operation extends Model
     }
     public static function getToday()
     {
-        $operations = static::where('type', 'صرف')->get()->where('new_date', now()->format('Y-m-d'))->where('isClosed', false);
+        $operations = static::where('type', 'صرف')->get()->where('new_date', now()->format('Y-m-d'));
         return $operations->sum('amount') ?? 0;
     }
 
@@ -49,7 +49,7 @@ class Operation extends Model
 
         // dd($startOfWeek);
 
-        $operations = static::where('type', 'صرف')->get()->whereBetween('new_date', [$startOfWeek, $endOfWeek])->where('isClosed', false);
+        $operations = static::where('type', 'صرف')->get()->whereBetween('new_date', [$startOfWeek, $endOfWeek]);
 
         return $operations->sum('amount') ?? 0;
     }
@@ -60,7 +60,7 @@ class Operation extends Model
 
         // dd($startOfMonth);
 
-        $operations = static::where('type', 'صرف')->get()->whereBetween('new_date', [$startOfMonth, $endOfMonth])->where('isClosed', false);
+        $operations = static::where('type', 'صرف')->get()->whereBetween('new_date', [$startOfMonth, $endOfMonth]);
 
         return $operations->sum('amount') ?? 0;
     }
@@ -72,15 +72,14 @@ class Operation extends Model
         // dd($startOfMonth);
 
         $operations = static::where(function ($query) {
-            $query->where('type', 'وارد')
-                ->orWhere('type', 'وارد شهر');
-        })->get()->whereBetween('new_date', [$startOfMonth, $endOfMonth])->where('isClosed', false);
+            $query->where('type', 'وارد');
+        })->get()->whereBetween('new_date', [$startOfMonth, $endOfMonth]);
 
         return $operations->sum('amount') ?? 0;
     }
     public static function getOutcomes()
     {
-        $operations = static::where('type', 'صرف')->get()->where('isClosed', false);
+        $operations = static::where('type', 'صرف')->get();
         $outcomes = 0;
         foreach ($operations as $operation) {
             $outcomes += $operation->amount;
@@ -90,9 +89,8 @@ class Operation extends Model
     public static function getIncomes()
     {
         $operations = static::where(function ($query) {
-            $query->where('type', 'وارد')
-                ->orWhere('type', 'وارد شهر');
-        })->where('isClosed', false)->get();
+            $query->where('type', 'وارد');
+        })->get();
         $incomes = 0;
         foreach ($operations as $operation) {
             $incomes += $operation->amount;

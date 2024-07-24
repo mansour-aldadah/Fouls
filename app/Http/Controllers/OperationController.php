@@ -7,7 +7,7 @@ use App\Models\Consumer;
 use App\Models\LogFile;
 use App\Models\MovementRecord;
 use App\Models\SubConsumer;
-use Carbon\Carbon;
+use Carbon\Carbon as Carbon;
 use DateTime;
 use Hamcrest\Type\IsInteger;
 use Illuminate\Http\Request;
@@ -120,11 +120,6 @@ class OperationController extends Controller
             $operation->foulType = 'سولار';
             $operation->description = 'وارد من شهر ' . $monthInput;
             $operation->save();
-            $operations = Operation::all()->where('month', $request->input('month'));
-            foreach ($operations as $op) {
-                $op->isClosed = true;
-                $isUpdated = $op->save();
-            }
         }
         $amount = Operation::getExistOFWithMonth('بنزين', $request->input('month'));
         $isUpdated2 = false;
@@ -136,13 +131,12 @@ class OperationController extends Controller
             $operation->amount = $amount;
             $operation->foulType = 'بنزين';
             $operation->save();
-            $operations = Operation::all()->where('month', $request->input('month'));
-            foreach ($operations as $op) {
-                $op->isClosed = true;
-                $isUpdated2 = $op->save();
-            }
         }
-
+        $operations = Operation::all()->where('month', $request->input('month'));
+        foreach ($operations as $op) {
+            $op->isClosed = true;
+            $isUpdated3 = $op->save();
+        }
         if ($isUpdated2 || $isUpdated) {
             $logFile = new LogFile();
             $logFile->user_id = Auth::user()->id;
@@ -156,11 +150,9 @@ class OperationController extends Controller
 
         return response()->json([
             'icon' => 'success',
-            'message' => $isUpdated || $isUpdated2 ? 'تم إغلاق شهر ' . $request->input('month') . ' بنجاح' : 'فشل في الإغلاق'
+            'message' => $isUpdated3 ? 'تم إغلاق شهر ' . $request->input('month') . ' بنجاح' : 'فشل في الإغلاق'
         ], $isUpdated ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
     }
-
-
 
     public function indexIncome($time)
     {
@@ -391,6 +383,25 @@ class OperationController extends Controller
                 return $fail('لا يوجد ما يكفي من الوقود لصرف هذه الكمية');
             }]);
         }
+        $request->validate([
+            'date' => function ($attribute, $value, $fail) {
+                try {
+                    // Parse the input date from 'Y-m-d' format
+                    $date = Carbon::createFromFormat('Y-m-d', $value);
+                    // Format the date to 'Y-m'
+                    $monthFormatted = $date->format('Y-m');
+                    // Check if there are any closed operations for the formatted month
+                    $operationsExist = Operation::whereRaw('DATE_FORMAT(date, "%Y-%m") = ?', [$monthFormatted])
+                        ->where('isClosed', true)
+                        ->exists();
+                    if ($operationsExist) {
+                        $fail('لا يمكن إضافة عمليات على شهر مغلق');
+                    }
+                } catch (\Exception $e) {
+                    $fail('صيغة التاريخ غير صحيحة.');
+                }
+            }
+        ]);
         $operation = new Operation();
         $operation->sub_consumer_id = $request->input('sub_consumer_name');
         if ($request->input('checked')) {
@@ -461,6 +472,26 @@ class OperationController extends Controller
             'date' => 'أدخل التاريخ',
             'foulType' => 'أدخل نوع الوقود',
         ]);
+        $request->validate([
+            'date' => function ($attribute, $value, $fail) {
+                try {
+                    // Parse the input date from 'Y-m-d' format
+                    $date = Carbon::createFromFormat('Y-m-d', $value);
+                    // Format the date to 'Y-m'
+                    $monthFormatted = $date->format('Y-m');
+                    // Check if there are any closed operations for the formatted month
+                    $operationsExist = Operation::whereRaw('DATE_FORMAT(date, "%Y-%m") = ?', [$monthFormatted])
+                        ->where('isClosed', true)
+                        ->exists();
+                    if ($operationsExist) {
+                        $fail('لا يمكن إضافة عمليات على شهر مغلق');
+                    }
+                } catch (\Exception $e) {
+                    $fail('صيغة التاريخ غير صحيحة.');
+                }
+            }
+        ]);
+
         $operation = new Operation();
         $operation->amount = $request->input('amount');
         $operation->type = 'وارد';
