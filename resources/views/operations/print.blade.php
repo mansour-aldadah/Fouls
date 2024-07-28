@@ -116,10 +116,10 @@
                             @if ($consumer_id)
                                 @if ($sub_consumer_id)
                                     للمستهلك
-                                    ({{ App\Models\SubConsumer::find($sub_consumer_id)->withTrashed()->first()->details }})
+                                    ({{ App\Models\SubConsumer::withTrashed()->findOrFail($sub_consumer_id)->details }})
                                 @else
                                     للمستهلكين
-                                    ({{ App\Models\Consumer::findOrFail($consumer_id)->withTrashed()->first()->name }})
+                                    ({{ App\Models\Consumer::withTrashed()->findOrFail($consumer_id)->name }})
                                 @endif
                             @endif
                             @if ($foulType)
