@@ -102,7 +102,7 @@
                             برقم سند الصرف
                             <b class="d-inline">#{{ $operation->dischangeNumber }}</b>
                             وذلك بتاريخ
-                            <b class="d-inline">{{ $operation->new_date }}</b>
+                            <b class="d-inline">{{ $operation->date }}</b>
                         </p>
                     </div>
                     <div class="text-center mt-5 mb-3">

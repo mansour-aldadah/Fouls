@@ -203,7 +203,7 @@
                                         <td style=" text-align: center">
                                             {{ number_format($operation->amount, 2) }}
                                         </td>
-                                        <td style=" text-align: center">{{ $operation->new_date }}</td>
+                                        <td style=" text-align: center">{{ $operation->date }}</td>
                                     </tr>
                                 @endif
                             @endfor

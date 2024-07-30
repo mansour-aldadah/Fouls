@@ -98,8 +98,8 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="date">التاريخ</label>
-                                <input type="date" class="form-control" id="date" name="date"
-                                    @if (old('date')) value="{{ \Carbon\Carbon::parse(old('date'))->format('Y-m-d') }}" @else value="{{ \Carbon\Carbon::parse(now())->format('Y-m-d') }}" @endif
+                                <input type="datetime-local" class="form-control" id="date" name="date"
+                                    @if (old('date')) value="{{ \Carbon\Carbon::parse(old('date')) }}" @else value="{{ \Carbon\Carbon::parse(now(3)) }}" @endif
                                     placeholder="أدخل التاريخ">
                             </div>
                         </div>

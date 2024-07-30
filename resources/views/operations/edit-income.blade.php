@@ -61,9 +61,9 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label for="date">التاريخ</label>
-                                <input type="date" class="form-control" id="date" name="date" disabled
-                                    @if (old('date')) value="{{ \Carbon\Carbon::parse(old('date'))->format('Y-m-d') }}" @else
-                                value="{{ $operation->new_date }}" @endif
+                                <input type="datetime-local" class="form-control" id="date" name="date" readonly
+                                    @if (old('date')) value="{{ \Carbon\Carbon::parse(old('date')) }}" @else
+                                value="{{ $operation->date }}" @endif
                                     placeholder="أدخل التاريخ">
                             </div>
                         </div>

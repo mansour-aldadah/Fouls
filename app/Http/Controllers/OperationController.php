@@ -235,7 +235,7 @@ class OperationController extends Controller
             ], [
                 'from_date.required' => 'أدخل التاريخ'
             ]);
-            $operations->where('date',  $From);
+            $operations->whereRaw('DATE_FORMAT(date, "%Y-%m-%d") = ?', [$From]);
         } elseif ($reportDate == 'لفترة') {
             $request->validate(
                 [
@@ -248,7 +248,7 @@ class OperationController extends Controller
                     'to_date.after' => 'يجب أن يكون التاريخ الثاني بعد التاريخ الأول'
                 ]
             );
-            $operations->where('date', '>=', $From);
+            $operations->whereRaw('DATE_FORMAT(date, "%Y-%m-%d") >= ?', [$From]);
         } else {
             if ($From && $To) {
                 $request->validate(
@@ -262,14 +262,14 @@ class OperationController extends Controller
                         'to_date.after' => 'يجب أن يكون التاريخ الثاني بعد التاريخ الأول'
                     ]
                 );
-                $operations->where('date', '>=', $From);
+                $operations->whereRaw('DATE_FORMAT(date, "%Y-%m-%d") >= ?', [$From]);
             }
         }
 
 
 
         if ($To) {
-            $operations->where('date', '<=', $To);
+            $operations->whereRaw('DATE_FORMAT(date, "%Y-%m-%d") <= ?', [$To]);
         }
 
         if ($foulType) {
@@ -386,8 +386,9 @@ class OperationController extends Controller
         $request->validate([
             'date' => function ($attribute, $value, $fail) {
                 try {
-                    // Parse the input date from 'Y-m-d' format
-                    $date = Carbon::createFromFormat('Y-m-d', $value);
+
+                    $date = Carbon::createFromFormat('Y-m-d\TH:i:s', $value);
+                    //dd($date);
                     // Format the date to 'Y-m'
                     $monthFormatted = $date->format('Y-m');
                     // Check if there are any closed operations for the formatted month
@@ -476,7 +477,10 @@ class OperationController extends Controller
             'date' => function ($attribute, $value, $fail) {
                 try {
                     // Parse the input date from 'Y-m-d' format
-                    $date = Carbon::createFromFormat('Y-m-d', $value);
+                    // dd($value);
+
+                    $date = Carbon::createFromFormat('Y-m-d\TH:i:s', $value);
+                    //dd($date);
                     // Format the date to 'Y-m'
                     $monthFormatted = $date->format('Y-m');
                     // Check if there are any closed operations for the formatted month
@@ -487,7 +491,7 @@ class OperationController extends Controller
                         $fail('لا يمكن إضافة عمليات على شهر مغلق');
                     }
                 } catch (\Exception $e) {
-                    $fail('صيغة التاريخ غير صحيحة.');
+                    $fail('صيغة التاريخ غير صحيحة.' . $e);
                 }
             }
         ]);

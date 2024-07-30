@@ -34,7 +34,7 @@
                             <!-- text input -->
                             <div class="form-group" data-select2-id="13">
                                 <label>المستهلك الرئيسي</label>
-                                <select class="form-control select2 select2-hidden-accessible consumer_name" disabled
+                                <select class="form-control select2 select2-hidden-accessible consumer_name" readonly
                                     id="consumer_name" name="consumer_name" style="width: 100%;" data-select2-id="1"
                                     tabindex="-1" aria-hidden="true">
                                     <option value="{{ $consumer->id }}">{{ $consumer->name }}</option>
@@ -52,7 +52,7 @@
                             <div class="form-group" data-select2-id="13">
                                 <label>المستهلك</label>
                                 <select class="form-control select2 select2-hidden-accessible" id="sub_consumer_name"
-                                    disabled name="sub_consumer_name" style="width: 100%;" data-select2-id="1"
+                                    readonly name="sub_consumer_name" style="width: 100%;" data-select2-id="1"
                                     tabindex="-1" aria-hidden="true">
                                     <option value="{{ $subConsumer->id }}">{{ $subConsumer->details }}</option>
                                     @foreach (App\Models\Consumer::withTrashed()->findOrFail($consumer_id)->subConsumers as $subConsumer)
@@ -66,7 +66,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label for="receiverName">اسم المستلم</label>
-                                <input type="string" class="form-control" id="receiverName" disabled
+                                <input type="string" class="form-control" id="receiverName" readonly
                                     name="receiverName"value="@if (old('receiverName')) {{ old('receiverName') }} @else {{ $operation->receiverName }} @endif"
                                     placeholder="أدخل اسم المستلم">
                             </div>
@@ -115,9 +115,9 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="date">التاريخ</label>
-                                <input type="date" class="form-control" id="date" name="date" disabled
-                                    @if (old('date')) value="{{ \Carbon\Carbon::parse(old('date'))->format('Y-m-d') }}"  @else
-                                value="{{ $operation->new_date }}" @endif
+                                <input type="datetime-local" class="form-control" id="date" name="date" readonly
+                                    @if (old('date')) value="{{ \Carbon\Carbon::parse(old('date')) }}"  @else
+                                value="{{ $operation->date }}" @endif
                                     placeholder="أدخل التاريخ">
                             </div>
                         </div>

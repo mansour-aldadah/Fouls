@@ -74,7 +74,7 @@
                             <b class="d-inline">{{ number_format($operation->amount, 2) }}</b> (لتر)
                             <b class="d-inline">{{ $operation->foulType }}</b>
                             وذلك بتاريخ
-                            <b class="d-inline">{{ $operation->new_date }}</b>
+                            <b class="d-inline">{{ $operation->date }}</b>
                         </p>
                     </div>
                     </ul>
