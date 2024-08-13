@@ -41,8 +41,8 @@ class UserController extends Controller
         $validator = Validator(
             $request->all(),
             [
-                'oldPassword' => ['required', function ($attribute, $value, $fail) {
-                    if (!Hash::check($value, Auth::user()->password)) {
+                'oldPassword' => ['required', function ($attribute, $value, $fail) use ($user) {
+                    if (!Hash::check($value, $user->password)) {
                         $fail('كلمة المرور القديمة غير صحيحة');
                     }
                 }],
