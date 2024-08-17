@@ -56,7 +56,7 @@
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="{{ route('dashboard') }}" class="nav-link">الرئيسية</a>
                 </li>
-                @if (Illuminate\Support\Facades\Auth::user()->role == 'مدير')
+                @if (Illuminate\Support\Facades\Auth::user()->role == 'مدير أعلى')
                     <li class="nav-item d-none d-sm-inline-block">
                         <a href="{{ route('log_files.index') }}" class="nav-link">سجل العمليات</a>
                     </li>
@@ -164,7 +164,7 @@
 
                 <!-- Sidebar Menu -->
 
-                @if (Illuminate\Support\Facades\Auth::user()->role == 'مدير')
+                @if (Illuminate\Support\Facades\Auth::user()->role == 'مدير أعلى')
                     <nav class="mt-2">
                         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                             data-accordion="false">
@@ -199,7 +199,7 @@
                     </nav>
                 @endif
 
-                @if (Illuminate\Support\Facades\Auth::user()->role == 'مدير' ||
+                @if (Illuminate\Support\Facades\Auth::user()->role == 'مدير أعلى' ||
                         Illuminate\Support\Facades\Auth::user()->role == 'مستخدم')
                     <nav class="mt-2">
                         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"

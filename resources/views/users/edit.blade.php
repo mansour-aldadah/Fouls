@@ -29,15 +29,34 @@
                             placeholder="أدخل الاسم">
                     </div>
                     <div class="form-group" data-select2-id="13">
-                        <label>نوع المستخدم</label>
-                        <select class="form-control select2 select2-hidden-accessible" id="role" name="role"
+                        <label>النظام</label>
+                        <select class="form-control select2 select2-hidden-accessible" id="system" name="system"
                             style="width: 100%;" data-select2-id="1" tabindex="-1" aria-hidden="true">
+                            <option value="">أدخل النظام</option>
+                            <option value="2"
+                                @if (old('system') == '2') selected @elseif(App\Models\UserSystem::where('user_id', $user->id)->first()->system_id == '2') selected @endif>
+                                المحروقات
+                            </option>
+                            <option
+                                value="1"@if (old('system') == '1') selected @elseif(App\Models\UserSystem::where('user_id', $user->id)->first()->system_id == '1') selected @endif>
+                                الأرشيف
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group" data-select2-id="13">
+                        <label>نوع المستخدم</label>
+                        <select class="form-control select2 select2-hidden-accessible" id="role" style="width: 100%;"
+                            name="role" data-select2-id="1" tabindex="-1" aria-hidden="true">
                             <option value="">أدخل نوع المستخدم</option>
                             <option value="مستخدم"
                                 @if (old('role') == 'مستخدم') selected @elseif($user->role == 'مستخدم') selected @endif>
                                 مستخدم
                             </option>
-                            <option value="مستهلك"
+                            <option value="مدير"
+                                @if (old('role') == 'مدير') selected @elseif($user->role == 'مدير') selected @endif>
+                                مدير
+                            </option>
+                            <option value="مستهلك" id="opCons"
                                 @if (old('role') == 'مستهلك') selected @elseif($user->role == 'مستهلك') selected @endif>
                                 مستهلك
                             </option>
@@ -80,6 +99,7 @@
                 username: document.getElementById('username').value,
                 role: document.getElementById('role').value,
                 name: document.getElementById('name').value,
+                system_id: document.getElementById('system').value,
                 consumer_id: document.getElementById('consumer_id').value
             })
             .then(function(response) {
@@ -111,6 +131,19 @@
                 }
             } else {
                 $('.consumer_id').css('display', 'none');
+            }
+        })
+        $('#system').on('change', function() {
+            var system = $(this).val();
+            if (system) {
+                $('.userType').css('display', 'block');
+                if (system == 'fouls') {
+                    $('#opCons').css('display', 'block');
+                } else {
+                    $('#opCons').css('display', 'none');
+                }
+            } else {
+                $('.userType').css('display', 'none');
             }
         })
     });

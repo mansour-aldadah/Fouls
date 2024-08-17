@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Consumer;
 use App\Models\LogFile;
+use App\Models\System;
 use App\Models\User;
 use App\Models\UserConsumer;
+use App\Models\UserSystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -20,7 +22,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all()->where('role', '!==', 'مدير');
+        $users = User::all();
         return view('users.index', ['users' => $users]);
     }
 
@@ -89,17 +91,20 @@ class UserController extends Controller
         $validator = Validator(
             $request->all(),
             [
-                'username' => ['required', 'string', 'max:255'],
+                'username' => ['required', 'string', 'max:255', 'unique:users'],
                 'password' => ['required', 'confirmed', Password::defaults()],
-                'role' => ['required'],
                 'name' => ['required'],
+                'system_id' => ['required'],
+                'role' => ['required'],
                 'consumer_id' => Rule::requiredIf(fn () => $role == 'مستهلك')
             ],
             [
                 'username.required' => 'أدخل اسم المستخدم',
+                'username.unique' => 'اسم المستخدم موجود مسبقاً',
                 'password.required' => 'أدخل كلمة المرور',
-                'role' => 'أدخل نوع المستخدم',
                 'name' => 'أدخل الاسم',
+                'system_id' => 'أدخل النظام المطلوب',
+                'role' => 'أدخل نوع المستخدم',
                 'password.confirmed' => 'كلمة المرور وتأكيدها غير متطابقتين',
                 'consumer_id' => 'أدخل اسم المستهلكين المسؤول عنهم'
             ]
@@ -111,6 +116,10 @@ class UserController extends Controller
             $user->role = $request->input('role');
             $user->name = $request->input('name');
             $isSaved = $user->save();
+            $userSystem = new UserSystem();
+            $userSystem->user_id = $user->id;
+            $userSystem->system_id = (int) $request->input('system_id');
+            $isSaved = $isSaved && $userSystem->save();
             if ($isSaved) {
                 $logFile = new LogFile();
                 $logFile->user_id = Auth::user()->id;
@@ -165,14 +174,17 @@ class UserController extends Controller
         $validator = Validator(
             $request->all(),
             [
-                'username' => ['required', 'string', 'max:255'],
+                'username' => ['required', 'string', 'max:255', 'unique:users,name,' . $user->id . ',id'],
                 'role' => ['required'],
                 'name' => ['required'],
+                'system_id' =>  ['required'],
                 'consumer_id' => Rule::requiredIf(fn () => $role == 'مستهلك')
             ],
             [
                 'username.required' => 'أدخل اسم المستخدم',
+                'username.unique' => 'أدخل اسم المستخدم',
                 'consumer_id' => 'أدخل اسم المستهلكين المسؤول عنهم',
+                'system_id' => 'أدخل النظام المطلوب',
                 'role' => 'أدخل نوع المستخدم',
                 'name' => 'أدخل الاسم',
             ]
@@ -184,6 +196,18 @@ class UserController extends Controller
             $user->role = $request->input('role');
             $user->name = $request->input('name');
             $isUpdated = $user->save();
+            $userSystem = UserSystem::where('user_id', $user->id)->first();
+            $userSystem->system_id = (int) $request->input('system_id');
+            $isUpdated = $isUpdated && $userSystem->save();
+            if ($isUpdated) {
+                $logFile = new LogFile();
+                $logFile->user_id = Auth::user()->id;
+                $logFile->object_type = 'App\Models\User';
+                $logFile->object_id = $user->id;
+                $logFile->action = 'adding';
+                $logFile->old_content = null;
+                $logFile->save();
+            }
             if ($isUpdated) {
                 $logFile = new LogFile();
                 $logFile->user_id = Auth::user()->id;
@@ -223,16 +247,28 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $old = $user;
-        $userConsumers = UserConsumer::where('user_id', $user->id);
-        $isDeleted =  $userConsumers->delete() && $user->delete();
+        $userConsumersExist = UserConsumer::where('user_id', $user->id)->exists();
+        $userSystemsExist = UserSystem::where('user_id', $user->id)->exists();
+        $isDeleted = false;
+        if ($userConsumersExist) {
+            if ($userSystemsExist) {
+                $isDeleted = UserConsumer::where('user_id', $user->id)->delete() &&
+                    UserSystem::where('user_id', $user->id)->delete() &&
+                    $user->delete();
+            } else {
+                $isDeleted = UserConsumer::where('user_id', $user->id)->delete() &&
+                    $user->delete();
+            }
+        } else {
+            $isDeleted = $user->delete();
+        }
         if ($isDeleted) {
             $logFile = new LogFile();
             $logFile->user_id = Auth::user()->id;
             $logFile->object_type = 'App\Models\User';
-            $logFile->object_id = $old->id;
+            $logFile->object_id = $user->id;
             $logFile->action = 'deleting';
-            $logFile->old_content = $old;
+            $logFile->old_content = $user->toJson();
             $logFile->save();
         }
         return response()->json([

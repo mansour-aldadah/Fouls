@@ -19,6 +19,8 @@
                             <th style="width: 10px">#</th>
                             <th>اسم المستخدم</th>
                             <th>الاسم</th>
+                            <th>النظام</th>
+                            <th>الصلاحية</th>
                             <th style="width: 200px; text-align: center">الإعدادات</th>
                         </tr>
                     </thead>
@@ -28,6 +30,9 @@
                                 <td>{{ $counter++ }}</td>
                                 <td>{{ $user->username }}</td>
                                 <td>{{ $user->name }}</td>
+                                <td>{{ App\Models\System::where('id', App\Models\UserSystem::where('user_id', $user->id)->first()->system_id)->get()[0]->name == 'archive' ? 'الأرشيف' : 'المحروقات' }}
+                                </td>
+                                <td>{{ $user->role }}</td>
                                 <td class="text-center align-middle">
                                     <div class="btn-group">
                                         <a href="{{ route('users.show', $user->id) }}" class="btn btn-info"

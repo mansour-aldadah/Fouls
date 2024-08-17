@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_systems', function (Blueprint $table) {
-            $table->foreignid('user_id')->constrained()->restrictOnDelete();
-            $table->foreignid('system_id')->constrained();
-            $table->primary(['user_id', 'system_id']);
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            $table->enum('role', ['مدير', 'مستخدم', 'مستهلك', 'مدير أعلى'])->change();
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_systems');
+        Schema::table('users', function (Blueprint $table) {
+            $table->enum('role', ['مدير', 'مستخدم', 'مستهلك'])->change();
+        });
     }
 };
