@@ -200,6 +200,7 @@
                 @endif
 
                 @if (Illuminate\Support\Facades\Auth::user()->role == 'مدير أعلى' ||
+                        Illuminate\Support\Facades\Auth::user()->role == 'مدير' ||
                         Illuminate\Support\Facades\Auth::user()->role == 'مستخدم')
                     <nav class="mt-2">
                         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"

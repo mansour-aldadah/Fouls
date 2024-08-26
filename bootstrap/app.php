@@ -5,6 +5,7 @@ use App\Http\Middleware\AdminOrUser;
 use App\Http\Middleware\Archive;
 use App\Http\Middleware\Consumer;
 use App\Http\Middleware\Fouls;
+use App\Http\Middleware\SuperAdmin;
 use App\Http\Middleware\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'isUser' => User::class,
             'isArchive' => Archive::class,
             'isFouls' => Fouls::class,
+            'isSuperAdmin' => SuperAdmin::class,
             'isAdminOrUser' => AdminOrUser::class,
         ]);
     })

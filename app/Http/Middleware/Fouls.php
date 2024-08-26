@@ -17,10 +17,11 @@ class Fouls
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (UserSystem::where('user_id', Auth::user()->id)->first()->system_id == 2) {
-            return $next($request);
-        } else {
-            return redirect()->back();
+        foreach (UserSystem::where('user_id', Auth::user()->id)->get() as $userSystem) {
+            if ($userSystem->system_id == 2) {
+                return $next($request);
+            }
         }
+        return redirect()->back();
     }
 }

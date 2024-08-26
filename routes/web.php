@@ -22,26 +22,30 @@ Route::middleware('guest')->group(function () {
     });
 });
 
+Route::get('/choose-system', function () {
+    return view('choose-system');
+})->middleware(['auth', 'isSuperAdmin'])->name('choose-system');
+
 Route::get('/dashboard', function () {
     $operaions = Operation::orderByDesc('date')->orderByDesc('created_at')->where('isClosed', false)->take(10)->get();
     $travels = Travel::orderByDesc('date')->orderByDesc('created_at')->take(10)->get();
     return view('home', ['operations' => $operaions, 'travels' => $travels]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'isFouls', 'verified'])->name('dashboard');
 
-Route::middleware(['auth', 'isAdmin'])->group(function () {
+Route::middleware(['auth', 'isFouls', 'can:superAdmins-admins'])->group(function () {
     Route::resource('users', UserController::class);
     Route::resource('log_files', LogFileController::class);
 });
-Route::middleware(['auth', 'isConsumer'])->group(function () {
+Route::middleware(['auth', 'isFouls',  'can:consumers'])->group(function () {
     Route::resource('travels', TravelController::class);
     Route::put('travels/updateStatus/{travel}', [TravelController::class, 'updateStatus'])->name('travel.updateStatus');
     Route::put('travels/cancelTravel/{travel}', [TravelController::class, 'cancelTravel'])->name('travel.cancelTravel');
 });
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'isFouls'])->group(function () {
     Route::get('/travels', [TravelController::class, 'index'])->name('travels.index');
 });
 
-Route::middleware(['auth', 'isAdminOrUser'])->group(function () {
+Route::middleware(['auth', 'isFouls', 'can:superAdmins-admins-users'])->group(function () {
     Route::get('/operations/close-month', [OperationController::class, 'closeMonth'])->name('operations.closeMonth');
     Route::PUT('/operations/close-month', [OperationController::class, 'updateIsClosed'])->name('operations.updateIsClosed');
     Route::get('/operations/check-has-record/{subConsumerId}', [OperationController::class, 'checkHasRecord']);
@@ -74,8 +78,6 @@ Route::middleware(['auth', 'isAdminOrUser'])->group(function () {
     Route::PUT('movement_records/{movement_record}', [MovementRecordController::class, 'update'])->name('movement_records.update');
     Route::delete('movement_records/{movement_record}', [MovementRecordController::class, 'destroy'])->name('movement_records.destroy');
     Route::get('sub_consumers/{consumer}/create', [SubConsumerController::class, 'create'])->name('sub_consumers.create');
-
-    // Route::resource('movement_records', MovementRecordController::class);
     Route::view('/invoice-print', 'invoice-print')->name('invoice-print');
 });
 
